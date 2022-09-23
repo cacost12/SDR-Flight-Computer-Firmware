@@ -24,7 +24,6 @@
 #include "led.h"
 #include "flash.h"
 
-
 /*------------------------------------------------------------------------------
  Global Variables                                                                  
 ------------------------------------------------------------------------------*/
@@ -40,7 +39,7 @@
 ------------------------------------------------------------------------------*/
 UART_HandleTypeDef huart1; /* USB UART handler struct           */
 SPI_HandleTypeDef  hspi2;  /* SPI handler struct for flash chip */
-
+I2C_HandleTypeDef hi2c1; /* I2C handler struct */
 
 /*------------------------------------------------------------------------------
  Function prototypes                                                          
@@ -49,7 +48,8 @@ void	    SystemClock_Config ( void ); /* clock configuration               */
 static void GPIO_Init          ( void ); /* GPIO configurations               */
 static void USB_UART_Init      ( void ); /* USB UART configuration            */
 static void FLASH_SPI_Init     ( void ); /* FLASH SPI configuration           */
-
+static void MPU_Config(void);
+static void MX_I2C1_Init(void);
 
 /*------------------------------------------------------------------------------
  Application entry point                                                      
@@ -78,6 +78,8 @@ SystemClock_Config(); /* System clock                                         */
 GPIO_Init();          /* GPIO                                                 */
 USB_UART_Init();      /* USB UART                                             */
 FLASH_SPI_Init();     /* External flash chip                                  */
+MX_I2C1_Init();
+
 
 /*------------------------------------------------------------------------------
  Event Loop                                                                  
@@ -410,6 +412,78 @@ HAL_GPIO_Init(FLASH_SS_GPIO_PORT, &GPIO_InitStruct);
 //HAL_GPIO_Init(E_CONT_GPIO_PORT, &GPIO_InitStruct); /* Write to registers  */
 
 } /* GPIO_Init */
+
+
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.Timing = 0x00C0EAFF;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+
+}
+
+
+void MPU_Config(void)
+{
+  MPU_Region_InitTypeDef MPU_InitStruct = {0};
+
+  /* Disables the MPU */
+  HAL_MPU_Disable();
+
+  /** Initializes and configures the Region and the memory to be protected
+  */
+  MPU_InitStruct.Enable = MPU_REGION_ENABLE;
+  MPU_InitStruct.Number = MPU_REGION_NUMBER0;
+  MPU_InitStruct.BaseAddress = 0x0;
+  MPU_InitStruct.Size = MPU_REGION_SIZE_4GB;
+  MPU_InitStruct.SubRegionDisable = 0x87;
+  MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
+  MPU_InitStruct.AccessPermission = MPU_REGION_NO_ACCESS;
+  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
+  MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
+  MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
+  MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
+
+  HAL_MPU_ConfigRegion(&MPU_InitStruct);
+  /* Enables the MPU */
+  HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+
+}
 
 
 /**
