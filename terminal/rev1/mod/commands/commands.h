@@ -23,7 +23,7 @@ extern "C" {
 #define PING_OP 	0x01 /* ping command opcode    */
 #define CONNECT_OP	0x02 /* connect command opcode */
 #define IGNITE_OP	0x20 /* connect command opcode */
-
+#define SENSOR_OP	0x03
 /*------------------------------------------------------------------------------
  Function Prototypes 
 ------------------------------------------------------------------------------*/

@@ -23,7 +23,7 @@
 #include "commands.h"
 #include "led.h"
 #include "flash.h"
-
+#include "imu.h"
 /*------------------------------------------------------------------------------
  Global Variables                                                                  
 ------------------------------------------------------------------------------*/
@@ -44,7 +44,7 @@ I2C_HandleTypeDef hi2c1; /* I2C handler struct */
 /*------------------------------------------------------------------------------
  Function prototypes                                                          
 ------------------------------------------------------------------------------*/
-void	    SystemClock_Config ( void ); /* clock configuration               */
+void	      SystemClock_Config ( void ); /* clock configuration               */
 static void GPIO_Init          ( void ); /* GPIO configurations               */
 static void USB_UART_Init      ( void ); /* USB UART configuration            */
 static void FLASH_SPI_Init     ( void ); /* FLASH SPI configuration           */
@@ -62,13 +62,15 @@ int main
 /*------------------------------------------------------------------------------
  Local Variables                                                                  
 ------------------------------------------------------------------------------*/
-uint8_t data;           /* USB Incoming Data Buffer */
+uint8_t data;                                     /* USB Incoming Data Buffer */
+
+
 // TODO: Uncomment when ignition command has been re-implemented for the 
 //       flight computer
 //uint8_t ign_subcommand; /* Ignition subcommand code */
 //uint8_t ign_status;     /* Ignition status code     */
-
-
+uint8_t sensor_subcommand;
+uint8_t sensor_data_recieved;
 /*------------------------------------------------------------------------------
  MCU Initialization                                                                  
 ------------------------------------------------------------------------------*/
@@ -79,7 +81,7 @@ GPIO_Init();          /* GPIO                                                 */
 USB_UART_Init();      /* USB UART                                             */
 FLASH_SPI_Init();     /* External flash chip                                  */
 MX_I2C1_Init();
-
+IMU_Config_Func(pimu_config1,2,250,4800); /* Initialize IMU config            */
 
 /*------------------------------------------------------------------------------
  Event Loop                                                                  
@@ -107,7 +109,23 @@ while (1)
 				ping(&huart1);
 				break;
 				}
-
+      /*------------------------ Sensor Command ------------------------*/
+      // TODO: sensor command is currently being implemented
+      case SENSOR_OP:
+        {
+        // Receive sensor subcommand 
+        command_status = HAL_UART_Receive(&huart1, &sensor_subcommand, 1, 1);
+        if (command_status != HAL_TIMEOUT)
+        {
+        // Execute sensor subcommand
+        sensor_data_recieved = sensor_cmd_exe(sensor_subcommand);
+        }
+        else 
+        {
+          Error_Handler();
+        }
+        HAL_UART_Transmit(&huart1,sensor_data_recieved,sizeof(sensor_data_recieved),1);
+        }
 			/*------------------------ Ignite Command -------------------------*/
 			// TODO: Ignite command is currently implemented for the liquid engine 
             //       controller, implement for the flight computer
