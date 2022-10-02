@@ -24,7 +24,6 @@
 ------------------------------------------------------------------------------*/
 IMU_DATA imu *pIMU_data,IMU_data; 
 pIMU_data       = &IMU_data;
-pIMU_data->hi2c = hi2c1;
 
 /*------------------------------------------------------------------------------
  Default config for IMU 
@@ -47,14 +46,13 @@ pimu_config1 = &imu_config1;                      /* Set a pointer to IMU config
 *******************************************************************************/
 IMU_Status IMU_MAG_Read_Register
     (
-    struct imu *thisIMU,
     uint8_t reg,
     uint8_t *data
     )
 {
 return HAL_I2C_Mem_Read
         (
-        pIMU_data.hi2c,
+        hi2c1,
         IMU_MAG_ADDR, 
         reg, 
         I2C_MEMADD_SIZE_8BIT, 
@@ -76,7 +74,6 @@ return HAL_I2C_Mem_Read
 *******************************************************************************/
 IMU_Status IMU_MAG_Read_Registers
     (
-    struct imu *thisIMU,
     uint8_t reg,
     uint8_t *data, 
     uint8_t length
@@ -84,7 +81,7 @@ IMU_Status IMU_MAG_Read_Registers
 {
 return HAL_I2C_Mem_Read
         (
-        pIMU_data.hi2c, 
+        hi2c1, 
         IMU_MAG_ADDR, 
         reg, 
         I2C_MEMADD_SIZE_8BIT, 
@@ -105,14 +102,13 @@ return HAL_I2C_Mem_Read
 *******************************************************************************/
 IMU_Status IMU_Read_Register
     (
-    struct imu *thisIMU, 
     uint8_t reg, 
     uint8_t *data
     )
 {
 return HAL_I2C_Mem_Read
         (
-        pIMU_data.hi2c, 
+        hi2c1, 
         IMU_ADDR, 
         reg, 
         I2C_MEMADD_SIZE_8BIT, 
@@ -134,7 +130,6 @@ return HAL_I2C_Mem_Read
 *******************************************************************************/
 IMU_Status IMU_Read_Registers
     (
-    struct imu *thisIMU, 
     uint8_t reg, 
     uint8_t *data, 
     uint8_t length
@@ -142,7 +137,7 @@ IMU_Status IMU_Read_Registers
 {
 return HAL_I2C_Mem_Read
         (
-        pIMU_data.hi2c, 
+        hi2c1, 
         IMU_ADDR, 
         reg, 
         I2C_MEMADD_SIZE_8BIT, 
@@ -163,14 +158,13 @@ return HAL_I2C_Mem_Read
 *******************************************************************************/
 IMU_Status IMU_Write_Register
     (
-    struct imu *thisIMU, 
     uint8_t reg, 
     uint8_t *data
     )
 {
 return HAL_I2C_Mem_Write
         (
-        pIMU_data.hi2c, 
+        hi2c1, 
         IMU_ADDR, 
         reg, 
         I2C_MEMADD_SIZE_8BIT, 
@@ -206,13 +200,13 @@ IMU_Status  status;
  API function implementation 
 ------------------------------------------------------------------------------*/
 // Read ACCEL_X high byte and low byte registers
-status                  = IMU_Read_Registers(thisIMU, ACCEL_XOUT_H, regAccelX,2);
+status                  = IMU_Read_Registers(ACCEL_XOUT_H, regAccelX,2);
 errorCounter            = errorCounter + (status!=HAL_OK);
 // Read ACCEL_Y high byte and low byte registers
-status                  = IMU_Read_Registers(thisIMU, ACCEL_YOUT_H, regAccelY,2);
+status                  = IMU_Read_Registers(ACCEL_YOUT_H, regAccelY,2);
 errorCounter            = errorCounter + (status!=HAL_OK);
 // Read ACCEL_Z high byte and low byte registers
-status                  = IMU_Read_Registers(thisIMU, ACCEL_ZOUT_H, regAccelZ,2);
+status                  = IMU_Read_Registers(ACCEL_ZOUT_H, regAccelZ,2);
 errorCounter            = errorCounter + (status!=HAL_OK);
 
 // Combine high byte and low byte to 16 bit data 
@@ -256,13 +250,13 @@ IMU_Status  status;
  API function implementation 
 ------------------------------------------------------------------------------*/
 // Read GYRO_X high byte and low byte registers
-status              = IMU_Read_Registers(thisIMU, GYRO_XOUT_H, regGyroX,2);
+status              = IMU_Read_Registers(GYRO_XOUT_H, regGyroX,2);
 errorCounter        = errorCounter + (status!=HAL_OK);
 // Read GYRO_Y high byte and low byte registers
-status              = IMU_Read_Registers(thisIMU, GYRO_YOUT_H, regGyroY,2);
+status              = IMU_Read_Registers(GYRO_YOUT_H, regGyroY,2);
 errorCounter        = errorCounter + (status!=HAL_OK);
 // Read GYRO_Z high byte and low byte registers
-status              = IMU_Read_Registers(thisIMU, GYRO_ZOUT_H, regGyroZ,2);
+status              = IMU_Read_Registers(GYRO_ZOUT_H, regGyroZ,2);
 errorCounter        = errorCounter + (status!=HAL_OK);
 
 // Combine high byte and low byte to 16 bit data 
@@ -306,13 +300,13 @@ IMU_Status status;
  API function implementation 
 ------------------------------------------------------------------------------*/
 // Read MAG_X high byte and low byte registers
-status              = IMU_MAG_Read_Registers(thisIMU, MAG_XOUT_H, regMagX,2);
+status              = IMU_MAG_Read_Registers(MAG_XOUT_H, regMagX,2);
 errorCounter        = errorCounter + (status!=HAL_OK);
 // Read MAG_Y high byte and low byte registers
-status              = IMU_MAG_Read_Registers(thisIMU, MAG_YOUT_H, regMagY,2);
+status              = IMU_MAG_Read_Registers(MAG_YOUT_H, regMagY,2);
 errorCounter        = errorCounter + (status!=HAL_OK);
 // Read MAG_Z high byte and low byte registers
-status              = IMU_MAG_Read_Registers(thisIMU, MAG_ZOUT_H, regMagZ,2);
+status              = IMU_MAG_Read_Registers(MAG_ZOUT_H, regMagZ,2);
 errorCounter        = errorCounter + (status!=HAL_OK);
 
 // Combine high byte and low byte to 16 bit data 
@@ -359,7 +353,7 @@ IMU_Status status;
  API function implementation 
 ------------------------------------------------------------------------------*/
 // Read temperature high byte and low byte registers
-status              = IMU_Read_Registers(thisIMU, TEMP_OUT_H, regData,2);
+status              = IMU_Read_Registers(TEMP_OUT_H, regData,2);
 
 // Combine high byte and low byte to 16 bit data 
 errorCounter        = errorCounter + (status!=HAL_OK);
@@ -399,7 +393,7 @@ IMU_Status status;
  API function implementation 
 ------------------------------------------------------------------------------*/
 // Read Device ID register
-status          = IMU_Read_Register(thisIMU,IMU_ID, regData);
+status          = IMU_Read_Register(IMU_ID, regData);
 errorCounter    = errorCounter + (status!=HAL_OK);
 if (regData!=IMU_ID){
     return 255;
@@ -448,7 +442,7 @@ this_imu_config->mag_setting   = this_mag_setting;
 *                                                                              *
 *******************************************************************************/
 
-uint8_t sensor_cmd_exe
+IMU_DATA imu *sensor_cmd_exe
     (
         uint8_t subcommand
     )
@@ -462,11 +456,6 @@ uint8_t IMU_recieved_data;
  API function implementation 
 ------------------------------------------------------------------------------*/
 switch (subcommand){
-    case (IMU_LIST_CODE):
-    {
-        IMU_received_data   = imu_get_device_id(pIMU_data);
-        break;
-    }
     case (IMU_DUMP_CODE):
     {
         pIMU_data           = imu_get_accel_xyz(pIMU_data);

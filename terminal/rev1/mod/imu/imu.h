@@ -62,7 +62,6 @@
 ------------------------------------------------------------------------------*/
 // Structure for imu containing all accel, gyro, mag data and temp value
 typedef struct imu{
-    I2C_HandleTypeDef hi2c;
     double accel_x;
     double accel_y;
     double accel_z;
@@ -95,14 +94,12 @@ typedef struct HAL_StatusTypeDef IMU_Status;
 // Read one register from magnetometer module in the IMU
 IMU_Status IMU_MAG_Read_Register
     (
-    struct imu *thisIMU, 
     uint8_t reg, 
     uint8_t *data
     );
 // Read the specific numbers of registers at one time from magnetometer module in the IMU 
 IMU_Status IMU_MAG_Read_Registers
     (
-    struct imu *thisIMU,
     uint8_t reg,
     uint8_t *data, 
     uint8_t length
@@ -117,7 +114,6 @@ IMU_Status IMU_Read_Register
 // Read the specific numbers of registers at one time from acceleration and gyroscope module in the IMU
 IMU_Status IMU_Read_Registers
     (
-    struct imu *thisIMU, 
     uint8_t reg, 
     uint8_t *data, 
     uint8_t length
@@ -125,7 +121,6 @@ IMU_Status IMU_Read_Registers
 // Write one register to the IMU
 IMU_Status IMU_Write_Register
     (
-    struct imu *thisIMU, 
     uint8_t reg, 
     uint8_t *data
     );
@@ -164,7 +159,7 @@ void IMU_Config_Func
     uint16_t mag_setting;
     );
 
-uint8_t sensor_cmd_exe
+IMU_DATA imu *sensor_cmd_exe
     (
         uint8_t subcommand
     );

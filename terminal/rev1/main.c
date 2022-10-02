@@ -124,6 +124,9 @@ while (1)
         {
           Error_Handler();
         }
+        // Send size of IMU struct
+        HAL_UART_Transmit((&huart1,sizeof(sensor_data_recieved),sizeof(sizeof(sensor_data_recieved)),1);)
+        // Send IMU structure data
         HAL_UART_Transmit(&huart1,sensor_data_recieved,sizeof(sensor_data_recieved),1);
         }
 			/*------------------------ Ignite Command -------------------------*/
