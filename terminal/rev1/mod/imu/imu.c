@@ -550,67 +550,67 @@ pimu_config->mag_setting   = mag_setting;
 }
 
 
-/*******************************************************************************
-*                                                                              *
-* PROCEDURE:                                                                   * 
-* 		sensor_cmd_exe                                                      *
-*                                                                              *
-* DESCRIPTION:                                                                 * 
-* 		Execute sensor subcommand                                           *
-*                                                                              *
-*******************************************************************************/
+// /*******************************************************************************
+// *                                                                              *
+// * PROCEDURE:                                                                   * 
+// * 		sensor_cmd_exe                                                         *
+// *                                                                              *
+// * DESCRIPTION:                                                                 * 
+// * 		Execute sensor subcommand                                              *
+// *                                                                              *
+// *******************************************************************************/
 
-IMU_STATUS sensor_cmd_exe
-    (
-        uint8_t subcommand,
-        IMU_DATA *pIMU_data
-    )
-{
-/*------------------------------------------------------------------------------
- Local variables 
-------------------------------------------------------------------------------*/
-IMU_STATUS accel_status;
-IMU_STATUS gyro_status;
-IMU_STATUS mag_status;
+// IMU_STATUS sensor_cmd_exe
+//     (
+//         uint8_t subcommand,
+//         IMU_DATA *pIMU_data
+//     )
+// {
+// /*------------------------------------------------------------------------------
+//  Local variables 
+// ------------------------------------------------------------------------------*/
+// IMU_STATUS accel_status;
+// IMU_STATUS gyro_status;
+// IMU_STATUS mag_status;
 
-/*------------------------------------------------------------------------------
- API function implementation 
-------------------------------------------------------------------------------*/
-switch (subcommand){
-    case (IMU_DUMP_CODE):
-        {
-        accel_status         = imu_get_accel_xyz(pIMU_data);
-        gyro_status          = imu_get_gyro_xyz(pIMU_data);
-        mag_status           = imu_get_mag_xyz(pIMU_data);
+// /*------------------------------------------------------------------------------
+//  API function implementation 
+// ------------------------------------------------------------------------------*/
+// switch (subcommand){
+//     case (IMU_DUMP_CODE):
+//         {
+//         accel_status         = imu_get_accel_xyz(pIMU_data);
+//         gyro_status          = imu_get_gyro_xyz(pIMU_data);
+//         mag_status           = imu_get_mag_xyz(pIMU_data);
 
-        if ( accel_status != IMU_TIMEOUT ||
-             gyro_status  != IMU_TIMEOUT ||
-             mag_status   != IMU_TIMEOUT  )
-            {
+//         if ( accel_status != IMU_TIMEOUT ||
+//              gyro_status  != IMU_TIMEOUT ||
+//              mag_status   != IMU_TIMEOUT  )
+//             {
 
-            // Size of the pointer to IMU data structure
-            uint8_t imu_struct_size = sizeof( pIMU_data );
-            // Send the size of the IMU data structure
-            HAL_UART_Transmit(&huart1, imu_struct_size, sizeof(imu_struct_size),1);
-            // Send the IMU structure data
-            HAL_UART_Transmit(&huart1, pIMU_data,sizeof(pIMU_data),1);
+//             // Size of the pointer to IMU data structure
+//             uint8_t imu_struct_size = sizeof( pIMU_data );
+//             // Send the size of the IMU data structure
+//             HAL_UART_Transmit(&huart1, imu_struct_size, sizeof(imu_struct_size),1);
+//             // Send the IMU structure data
+//             HAL_UART_Transmit(&huart1, pIMU_data,sizeof(pIMU_data),1);
 
-            }
-        else
-            {
-            return IMU_TIMEOUT
-            }
-        return IMU_OK
-        break;
-        }
-    case (IMU_POLL_CODE):
-        {
-        // TODO: Implement poll code
-        break;
-        }
-    default:
-        {
-        return IMU_UNSUPPORTED_OP;
-        }
-    }
-}
+//             }
+//         else
+//             {
+//             return IMU_TIMEOUT
+//             }
+//         return IMU_OK
+//         break;
+//         }
+//     case (IMU_POLL_CODE):
+//         {
+//         // TODO: Implement poll code
+//         break;
+//         }
+//     default:
+//         {
+//         return IMU_UNSUPPORTED_OP;
+//         }
+//     }
+// }

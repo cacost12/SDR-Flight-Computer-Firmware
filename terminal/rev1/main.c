@@ -24,6 +24,7 @@
 #include "led.h"
 #include "flash.h"
 #include "imu.h"
+#include "sensor.h"
 
 /*------------------------------------------------------------------------------
  Global Variables                                                                  
@@ -70,8 +71,8 @@ uint8_t data;                                     /* USB Incoming Data Buffer */
 //       flight computer
 //uint8_t ign_subcommand; /* Ignition subcommand code */
 //uint8_t ign_status;     /* Ignition status code     */
-IMU_DATA *pIMU_data,IMU_data; /*Initialize IMU structure*/
-pIMU_data = &IMU_data;        /*Initialize pointer to IMU structure*/
+// IMU_DATA *pIMU_data,IMU_data; /*Initialize IMU structure*/
+// pIMU_data = &IMU_data;        /*Initialize pointer to IMU structure*/
 uint8_t sensor_subcommand;  /*Sensor subcommand*/
 
 
@@ -123,7 +124,7 @@ while (1)
         if (command_status != HAL_TIMEOUT)
         {
         // Execute sensor subcommand
-        IMU_STATUS imu_status = sensor_cmd_exe(sensor_subcommand, pIMU_data);
+        SENSOR_STATUS sensor_status = sensor_cmd_exe(sensor_subcommand);
         }
         else 
         {
