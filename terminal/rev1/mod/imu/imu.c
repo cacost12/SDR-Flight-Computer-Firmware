@@ -7,10 +7,12 @@
 * 		Contains API functions to access data from the IMU MPU9250
 *
 *******************************************************************************/
+
+// How long does it take for i2c send data, that data will be written to flash, sampling rate? several hours to take up the memory
+
 /*------------------------------------------------------------------------------
  Standard Includes                                                                     
 ------------------------------------------------------------------------------*/
-#include <stdio.h>
 #include <stdlib.h>
 
 /*------------------------------------------------------------------------------
@@ -24,7 +26,7 @@
 ------------------------------------------------------------------------------*/
 IMU_CONFIG imu_config *pimu_config1,imu_config1;  /* Initialize IMU config structure */
 pimu_config1 = &imu_config1;                      /* Set a pointer to IMU config structure */      
-
+// Move it to main
 /*------------------------------------------------------------------------------
  Procedures 
 ------------------------------------------------------------------------------*/
@@ -40,7 +42,7 @@ pimu_config1 = &imu_config1;                      /* Set a pointer to IMU config
 *******************************************************************************/
 IMU_STATUS IMU_MAG_Read_Register
     (
-    uint8_t reg,
+    uint8_t reg_addr,
     uint8_t *data
     )
 {
@@ -49,7 +51,6 @@ IMU_STATUS IMU_MAG_Read_Register
  Local variables  
 ------------------------------------------------------------------------------*/
 HAL_StatusTypeDef hal_status;
-hal_status = HAL_OK;
 
 /*------------------------------------------------------------------------------
  API function implementation 
@@ -67,31 +68,31 @@ hal_status = HAL_I2C_Mem_Read
                             HAL_DEFAULT_TIMEOUT
                             );
 
-if (status != HAL_TIMEOUT) 
-{
+if (hal_status != HAL_TIMEOUT) 
+    {
     return IMU_OK;
-}
+    }
 else 
-{
+    {
     return IMU_TIMEOUT;
-}
+    }
 } /* IMU_MAG_Read_Register */
 
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
-* 		IMU_MAG_Read_Registers                                                       *
+* 		IMU_MAG_Read_Registers                                                 *
 *                                                                              *
 * DESCRIPTION:                                                                 * 
 * 		Read the specific numbers of registers at one time from magnetometer`
-        module in the IMU                                                         *
+        module in the IMU                                                      *
 *                                                                              *
 *******************************************************************************/
 IMU_STATUS IMU_MAG_Read_Registers
     (
     uint8_t reg,
     uint8_t *data, 
-    uint8_t length
+    uint8_t num_registers
     )
 {
     
@@ -99,7 +100,6 @@ IMU_STATUS IMU_MAG_Read_Registers
  Local variables  
 ------------------------------------------------------------------------------*/
 HAL_StatusTypeDef hal_status;
-hal_status = HAL_OK;
 
 /*------------------------------------------------------------------------------
  API function implementation 
@@ -113,11 +113,11 @@ hal_status = HAL_I2C_Mem_Read
                             reg, 
                             I2C_MEMADD_SIZE_8BIT, 
                             data, 
-                            length, 
+                            num_registers, 
                             HAL_DEFAULT_TIMEOUT
                             );
 
-if (status != HAL_TIMEOUT) 
+if (hal_status != HAL_TIMEOUT) 
 {
     return IMU_OK;
 }
@@ -130,15 +130,15 @@ else
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
-* 		IMU_Read_Register                                                        *
+* 		IMU_Read_Register                                                      *
 *                                                                              *
 * DESCRIPTION:                                                                 * 
-* 		Read one register from acceleration and gyroscope module in the IMU                                                           *
+* 		Read one register from acceleration and gyroscope module in the IMU    *
 *                                                                              *
 *******************************************************************************/
 IMU_STATUS IMU_Read_Register
     (
-    uint8_t reg, 
+    uint8_t reg_addr, 
     uint8_t *data
     )
 {
@@ -147,7 +147,6 @@ IMU_STATUS IMU_Read_Register
  Local variables  
 ------------------------------------------------------------------------------*/
 HAL_StatusTypeDef hal_status;
-hal_status = HAL_OK;
 
 /*------------------------------------------------------------------------------
  API function implementation 
@@ -188,7 +187,7 @@ IMU_STATUS IMU_Read_Registers
     (
     uint8_t reg, 
     uint8_t *data, 
-    uint8_t length
+    uint8_t num_registers
     )
 {
 
@@ -196,7 +195,6 @@ IMU_STATUS IMU_Read_Registers
  Local variables  
 ------------------------------------------------------------------------------*/
 HAL_StatusTypeDef hal_status;
-hal_status = HAL_OK;
 
 /*------------------------------------------------------------------------------
  API function implementation 
@@ -210,7 +208,7 @@ hal_status = HAL_I2C_Mem_Read
                             reg, 
                             I2C_MEMADD_SIZE_8BIT, 
                             data, 
-                            length, 
+                            num_registers, 
                             HAL_MAX_DELAY
                             );
 
@@ -245,7 +243,6 @@ IMU_STATUS IMU_Write_Register
  Local variables  
 ------------------------------------------------------------------------------*/
 HAL_StatusTypeDef hal_status;
-hal_status = HAL_OK;
 
 /*------------------------------------------------------------------------------
  API function implementation 
@@ -274,11 +271,11 @@ return IMU_TIMEOUT;
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
-* 		imu_get_accel_xyz                                                        *
+* 		imu_get_accel_xyz                                                      *
 *                                                                              *
 * DESCRIPTION:                                                                 * 
 * 		Return the pointer to structure that updates the 
-        x,y,z acceleration values from the IMU                                                            *
+        x,y,z acceleration values from the IMU                                 *
 *                                                                              *
 *******************************************************************************/
 IMU_STATUS imu_get_accel_xyz
@@ -306,7 +303,9 @@ imu_status_y                  = IMU_Read_Registers(ACCEL_YOUT_H, &regAccelY[0],2
 imu_status_z                  = IMU_Read_Registers(ACCEL_ZOUT_H, &regAccelZ[0],2);
 
 /*Check for HAL IMU error*/
-if (imu_status_x == IMU_TIMEOUT || imu_status_y == IMU_TIMEOUT || imu_status_z == IMU_TIMEOUT )
+if ( imu_status_x == IMU_TIMEOUT || 
+     imu_status_y == IMU_TIMEOUT || 
+     imu_status_z == IMU_TIMEOUT )
 {
     return IMU_TIMEOUT;
 }
@@ -321,11 +320,12 @@ uint16_t accel_z_raw    = ((uint16_t)regAccelZ[0]<<8) | regAccelZ[1];
 // thisIMU->accel_y        = (accel_y_raw/pimu_config1->accel_setting*9.8)*65536;
 // thisIMU->accel_z        = (accel_z_raw/pimu_config1->accel_setting*9.8)*65536;
 
+/*Export data to IMU sstruct*/
 pIMU->accel_x = accel_x_raw;
 pIMU->accel_y = accel_y_raw;
 pIMU->accel_z = accel_z_raw;
 
-return imu_status;
+return IMU_OK;
 } /* imu_get_accel_xyz */
 
 /*******************************************************************************
@@ -362,7 +362,9 @@ imu_status_y             = IMU_Read_Registers(GYRO_XOUT_H, &regGyroX[0],2);
 imu_status_z             = IMU_Read_Registers(GYRO_YOUT_H, &regGyroY[0],2);
 
 /*Check for HAL IMU error*/
-if (imu_status_x == IMU_TIMEOUT || imu_status_y == IMU_TIMEOUT || imu_status_z == IMU_TIMEOUT )
+if (imu_status_x == IMU_TIMEOUT || 
+    imu_status_y == IMU_TIMEOUT || 
+    imu_status_z == IMU_TIMEOUT )
 {
     return IMU_TIMEOUT;
 }
@@ -381,7 +383,7 @@ pIMU->gyro_x = gyro_x_raw;
 pIMU->gyro_y = gyro_y_raw;
 pIMU->gyro_z = gyro_z_raw; 
 
-return imu_status;
+return IMU_OK;
 } /* imu_get_gyro_xyz */
 
 /*******************************************************************************
@@ -414,12 +416,14 @@ IMU_STATUS  imu_status_z;
 ------------------------------------------------------------------------------*/
 
 // Read MAG_X, MAG_Y, MAG_Z high byte and low byte registers
-imu_status             = IMU_MAG_Read_Registers(MAG_XOUT_H, &regMagX[0],2);
-imu_status             = IMU_MAG_Read_Registers(MAG_YOUT_H, &regMagY[0],2);
-imu_status             = IMU_MAG_Read_Registers(MAG_ZOUT_H, &regMagZ[0],2);
+imu_status_x             = IMU_MAG_Read_Registers(MAG_XOUT_H, &regMagX[0],2);
+imu_status_y             = IMU_MAG_Read_Registers(MAG_YOUT_H, &regMagY[0],2);
+imu_status_z             = IMU_MAG_Read_Registers(MAG_ZOUT_H, &regMagZ[0],2);
 
 /*Check for HAL IMU error*/
-if (imu_status_x == IMU_TIMEOUT || imu_status_y == IMU_TIMEOUT || imu_status_z == IMU_TIMEOUT )
+if ( imu_status_x == IMU_TIMEOUT ||
+     imu_status_y == IMU_TIMEOUT || 
+     imu_status_z == IMU_TIMEOUT )
 {
     return IMU_TIMEOUT;
 }
@@ -438,7 +442,7 @@ pIMU->mag_x = mag_x_raw;
 pIMU->mag_y = mag_y_raw;
 pIMU->mag_z = mag_z_raw;
 
-return imu_status;
+return IMU_OK;
 } /* imu_get_mag_xyz */
 
 /*******************************************************************************
@@ -498,7 +502,7 @@ return imu_status;
  
 IMU_STATUS imu_get_device_id
     (
-    IMU_DATA imu *thisIMU
+    IMU_DATA *pIMU
     )
 {
 /*------------------------------------------------------------------------------
@@ -514,14 +518,11 @@ IMU_STATUS  imu_status;
 // Read Device ID register
 imu_status          = IMU_Read_Register(IMU_ID, regData);
 
-if (imu_status == IMU_TIMEOUT){
-    return IMU_TIMEOUT;
-}
-
-if (regData!=IMU_ID){
-    return IMU_UNRECOGNIZED_OP;
-}
-return IMU_OK;
+if (regData!=IMU_ID)\
+    {
+    imu_status = IMU_UNRECOGNIZED_OP;
+    }
+return imu_status;
 } /* imu_get_device_id */
 
 
@@ -561,32 +562,55 @@ pimu_config->mag_setting   = mag_setting;
 
 IMU_STATUS sensor_cmd_exe
     (
-        uint8_t subcommand
+        uint8_t subcommand,
+        IMU_DATA *pIMU_data
     )
 {
 /*------------------------------------------------------------------------------
  Local variables 
 ------------------------------------------------------------------------------*/
-uint8_t IMU_recieved_data;
+IMU_STATUS accel_status;
+IMU_STATUS gyro_status;
+IMU_STATUS mag_status;
 
 /*------------------------------------------------------------------------------
  API function implementation 
 ------------------------------------------------------------------------------*/
 switch (subcommand){
     case (IMU_DUMP_CODE):
-    {
-        pIMU_data           = imu_get_accel_xyz(pIMU_data);
-        pIMU_data           = imu_get_gyro_xyz(pIMU_data);
-        pIMU_data           = imu_get_mag_xyz(pIMU_data);
-        IMU_received_data   = pIMU_data;
+        {
+        accel_status         = imu_get_accel_xyz(pIMU_data);
+        gyro_status          = imu_get_gyro_xyz(pIMU_data);
+        mag_status           = imu_get_mag_xyz(pIMU_data);
+
+        if ( accel_status != IMU_TIMEOUT ||
+             gyro_status  != IMU_TIMEOUT ||
+             mag_status   != IMU_TIMEOUT  )
+            {
+
+            // Size of the pointer to IMU data structure
+            uint8_t imu_struct_size = sizeof( pIMU_data );
+            // Send the size of the IMU data structure
+            HAL_UART_Transmit(&huart1, imu_struct_size, sizeof(imu_struct_size),1);
+            // Send the IMU structure data
+            HAL_UART_Transmit(&huart1, pIMU_data,sizeof(pIMU_data),1);
+
+            }
+        else
+            {
+            return IMU_TIMEOUT
+            }
+        return IMU_OK
         break;
-    }
+        }
     case (IMU_POLL_CODE):
-    {
+        {
         // TODO: Implement poll code
         break;
+        }
+    default:
+        {
+        return IMU_UNSUPPORTED_OP;
+        }
     }
-}
-// Return data recieved executed by subcommands
-return IMU_recieved_data;
 }

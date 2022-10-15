@@ -53,7 +53,7 @@ static void MPU_Config(void);
 static void MX_I2C1_Init(void);
 
 /*------------------------------------------------------------------------------
- Application entry point                                                      
+ Application entry point                    k                                  
 ------------------------------------------------------------------------------*/
 int main
 	(
@@ -72,8 +72,8 @@ uint8_t data;                                     /* USB Incoming Data Buffer */
 //uint8_t ign_status;     /* Ignition status code     */
 IMU_DATA *pIMU_data,IMU_data; /*Initialize IMU structure*/
 pIMU_data = &IMU_data;        /*Initialize pointer to IMU structure*/
-uint8_t sensor_subcommand;
-uint8_t sensor_data_recieved;
+uint8_t sensor_subcommand;  /*Sensor subcommand*/
+
 
 
 /*------------------------------------------------------------------------------
@@ -123,16 +123,12 @@ while (1)
         if (command_status != HAL_TIMEOUT)
         {
         // Execute sensor subcommand
-        sensor_data_recieved = sensor_cmd_exe(sensor_subcommand);
+        IMU_STATUS imu_status = sensor_cmd_exe(sensor_subcommand, pIMU_data);
         }
         else 
         {
           Error_Handler();
         }
-        // Send size of IMU struct
-        HAL_UART_Transmit((&huart1,sizeof(sensor_data_recieved),sizeof(sizeof(sensor_data_recieved)),1);)
-        // Send IMU structure data
-        HAL_UART_Transmit(&huart1,sensor_data_recieved,sizeof(sensor_data_recieved),1);
         }
 			/*------------------------ Ignite Command -------------------------*/
 			// TODO: Ignite command is currently implemented for the liquid engine 

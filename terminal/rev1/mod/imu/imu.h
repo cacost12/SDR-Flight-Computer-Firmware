@@ -130,37 +130,37 @@ IMU_STATUS IMU_Write_Register
 // Return the pointer to structure that updates the x,y,z acceleration values from the IMU
 IMU_STATUS imu_get_accel_xyz
     (
-    struct imu *thisIMU
+    struct *pIMU
     );
 
 // Return the pointer to structure that updates the x,y,z gyro values from the IMU
 IMU_STATUS imu_get_gryo_xyz
     (
-    struct imu *thisIMU
+    struct *pIMU
     );
 
 // Return the pointer to structure that updates the x,y,z magnetometer values from the IMU
 IMU_STATUS imu_get_mag_xyz
     (
-    struct imu *thisIMU
+    struct *pIMU
     );
 
 // Return the pointer to structure that updates the temperature from the IMU 
 IMU_STATUS imu_get_temp
     (
-    struct imu *thisIMU
+    struct *pIMU
     );
 
 // return the device ID of the IMU to verify that the IMU registers are accessible
 IMU_STATUS imu_get_device_id
     (
-    struct imu *thisIMU
+    struct *pIMU
     );
 
 // Change configuration of accel, gyro, mag
 void IMU_Config_Func
     (
-    IMU_CONFIG imu_config *this_imu_config,
+    IMU_CONFIG *pimu_config,
     uint8_t accel_setting;
     uint16_t gyro_setting;
     uint16_t mag_setting;
@@ -169,7 +169,8 @@ void IMU_Config_Func
 // Sensor commands executer
 IMU_DATA imu *sensor_cmd_exe
     (
-        uint8_t subcommand
+        uint8_t subcommand,
+        IMU_DATA *pIMU_data
     );
 
 // IMU Status
