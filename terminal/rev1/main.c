@@ -14,6 +14,7 @@
  Standard Includes                                                                     
 ------------------------------------------------------------------------------*/
 #include <stdbool.h>
+#include <string.h>
 #include "sdr_pin_defines_A0002_rev1.h"
 
 
@@ -65,6 +66,7 @@ int main
  Local Variables                                                                  
 ------------------------------------------------------------------------------*/
 uint8_t data;           /* USB Incoming Data Buffer */
+HAL_StatusTypeDef usb_status;
 // TODO: Uncomment when ignition command has been re-implemented for the 
 //       flight computer
 //uint8_t ign_subcommand; /* Ignition subcommand code */
@@ -81,70 +83,33 @@ GPIO_Init();          /* GPIO                                                 */
 USB_UART_Init();      /* USB UART                                             */
 //FLASH_SPI_Init();     /* External flash chip                                  */
 
+uint32_t tickstart; 
+uint32_t current_tick;
+uint8_t  current_tick_bytes[4];
+
 /*------------------------------------------------------------------------------
  Event Loop                                                                  
 ------------------------------------------------------------------------------*/
 while (1)
 	{
-	/* Read data from UART reciever */
-	uint8_t command_status = HAL_UART_Receive( &huart6       , 
-										       &data         , 
-											   sizeof( data ), 
-                                               HAL_DEFAULT_TIMEOUT );
-
-	/* Parse command input if HAL_UART_Receive doesn't timeout */
-	if ( command_status != HAL_TIMEOUT )
+	usb_status = HAL_UART_Receive( &huart6, &data, sizeof( data ), 100);
+	if ( usb_status != HAL_TIMEOUT )
 		{
-		switch(data)
+		tickstart = HAL_GetTick();
+		
+		while (1)
 			{
-			/*------------------------- Ping Command -------------------------*/
-			case PING_OP:
+			usb_status = HAL_UART_Receive( &huart6, &data, sizeof( data ), 100 );
+			if ( usb_status != HAL_TIMEOUT )
 				{
-				ping(&huart6);
-				break;
+				current_tick = HAL_GetTick() - tickstart;	
+				memcpy( &current_tick_bytes[0], &current_tick, sizeof(current_tick) );
+				HAL_UART_Transmit( &huart6, 
+								   &current_tick_bytes[0],
+								   sizeof( current_tick_bytes ),
+								   100 );
 				}
-
-			/*------------------------ Connect Command ------------------------*/
-			case CONNECT_OP:
-				{
-				ping(&huart6);
-				break;
-				}
-
-			/*------------------------ Ignite Command -------------------------*/
-			// TODO: Ignite command is currently implemented for the liquid engine 
-            //       controller, implement for the flight computer
-			//case IGNITE_OP:
-
-                /* Recieve ignition subcommand over USB */
-             //   command_status = HAL_UART_Receive(&huart6, &ign_subcommand, 1, 1);
-
-                /* Execute subcommand */
-              //  if (command_status != HAL_TIMEOUT)
-			//		{
-					/* Execute subcommand*/
-               //     ign_status = ign_cmd_execute(ign_subcommand);
-             //       }
-			//	else
-			//		{
-                    /* Error: no subcommand recieved */
-             //       Error_Handler();
-              //      }
-
-                /* Return response code to terminal */
-               // HAL_UART_Transmit(&huart6, &ign_status, 1, 1);
-				//break; 
-
-			default:
-				{
-				/* Unsupported command code flash the red LED */
-				led_error_flash();
-				}
-			} 
-		} 
-	else /* USB connection times out */
-		{
-		/* Do nothing */
+			}
 		}
 	}
 } /* main */
