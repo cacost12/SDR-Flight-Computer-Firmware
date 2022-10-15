@@ -87,7 +87,7 @@ GPIO_Init();          /* GPIO                                                 */
 USB_UART_Init();      /* USB UART                                             */
 FLASH_SPI_Init();     /* External flash chip                                  */
 MX_I2C1_Init();
-IMU_Config_Func(pimu_config1,2,250,4800); /* Initialize IMU config            */
+// IMU_Config_Func(pimu_config1,2,250,4800); /* Initialize IMU config            */
 
 /*------------------------------------------------------------------------------
  Event Loop                                                                  
@@ -124,7 +124,7 @@ while (1)
         if (command_status != HAL_TIMEOUT)
         {
         // Execute sensor subcommand
-        SENSOR_STATUS sensor_status = sensor_cmd_exe(sensor_subcommand);
+        SENSOR_STATUS sensor_status = sensor_cmd_execute(sensor_subcommand);
         }
         else 
         {

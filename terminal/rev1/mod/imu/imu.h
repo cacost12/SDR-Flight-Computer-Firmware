@@ -80,6 +80,14 @@ typedef struct imu_config{
     uint16_t    mag_setting;
 } IMU_CONFIG;
 
+// IMU Status
+typedef enum IMU_STATUS{
+    IMU_OK          = 0,
+    IMU_FAIL           ,
+    IMU_UNSUPPORTED_OP ,
+    IMU_UNRECOGNIZED_OP,
+    IMU_TIMEOUT    
+} IMU_STATUS;
 
 /*------------------------------------------------------------------------------
  Macros 
@@ -92,14 +100,14 @@ typedef struct imu_config{
 // Read one register from magnetometer module in the IMU
 IMU_STATUS IMU_MAG_Read_Register
     (
-    uint8_t reg, 
+    uint8_t reg_addr, 
     uint8_t *data
     );
 
 // Read the specific numbers of registers at one time from magnetometer module in the IMU 
 IMU_STATUS IMU_MAG_Read_Registers
     (
-    uint8_t reg,
+    uint8_t reg_addr,
     uint8_t *data, 
     uint8_t length
     );
@@ -107,15 +115,14 @@ IMU_STATUS IMU_MAG_Read_Registers
 // Read one register from acceleration and gyroscope module in the IMU
 IMU_STATUS IMU_Read_Register
     (
-    struct imu *thisIMU, 
-    uint8_t reg, 
+    uint8_t reg_addr, 
     uint8_t *data
     );
 
 // Read the specific numbers of registers at one time from acceleration and gyroscope module in the IMU
 IMU_STATUS IMU_Read_Registers
     (
-    uint8_t reg, 
+    uint8_t reg_addr, 
     uint8_t *data, 
     uint8_t length
     );
@@ -123,62 +130,49 @@ IMU_STATUS IMU_Read_Registers
 // Write one register to the IMU
 IMU_STATUS IMU_Write_Register
     (
-    uint8_t reg, 
+    uint8_t reg_addr, 
     uint8_t *data
     );
 
 // Return the pointer to structure that updates the x,y,z acceleration values from the IMU
 IMU_STATUS imu_get_accel_xyz
     (
-    struct *pIMU
+    IMU_DATA *pIMU
     );
 
 // Return the pointer to structure that updates the x,y,z gyro values from the IMU
-IMU_STATUS imu_get_gryo_xyz
+IMU_STATUS imu_get_gyro_xyz
     (
-    struct *pIMU
+    IMU_DATA *pIMU
     );
 
 // Return the pointer to structure that updates the x,y,z magnetometer values from the IMU
 IMU_STATUS imu_get_mag_xyz
     (
-    struct *pIMU
+    IMU_DATA *pIMU
     );
 
 // Return the pointer to structure that updates the temperature from the IMU 
 IMU_STATUS imu_get_temp
     (
-    struct *pIMU
+    IMU_DATA *pIMU
     );
 
 // return the device ID of the IMU to verify that the IMU registers are accessible
 IMU_STATUS imu_get_device_id
     (
-    struct *pIMU
+    IMU_DATA *pIMU
     );
 
 // Change configuration of accel, gyro, mag
 void IMU_Config_Func
     (
     IMU_CONFIG *pimu_config,
-    uint8_t accel_setting;
-    uint16_t gyro_setting;
-    uint16_t mag_setting;
+    uint8_t accel_setting,
+    uint16_t gyro_setting,
+    uint16_t mag_setting
     );
 
-// Sensor commands executer
-IMU_DATA imu *sensor_cmd_exe
-    (
-        uint8_t subcommand,
-        IMU_DATA *pIMU_data
-    );
 
-// IMU Status
-typedef enum IMU_STATUS{
-    IMU_OK          = 0,
-    IMU_FAIL           ,
-    IMU_UNSUPPORTED_OP ,
-    IMU_UNRECOGNIZED_OP,
-    IMU_TIMEOUT    
-} IMU_STATUS;
+
 #endif /* IMU_H */

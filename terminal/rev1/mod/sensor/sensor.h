@@ -52,7 +52,7 @@ uint8_t sensor_cmd_execute
 /* Dump all sensor readings to console */
 SENSOR_STATUS sensor_dump
 	(
-    uint32_t* pSensor_buffer 
+    uint8_t* pSensor_buffer 
     );
 
 

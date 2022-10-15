@@ -21,11 +21,11 @@
 #include "main.h"
 #include "imu.h"
 
-/*------------------------------------------------------------------------------
- Default config for IMU 
-------------------------------------------------------------------------------*/
-IMU_CONFIG imu_config *pimu_config1,imu_config1;  /* Initialize IMU config structure */
-pimu_config1 = &imu_config1;                      /* Set a pointer to IMU config structure */      
+// /*------------------------------------------------------------------------------
+//  Default config for IMU 
+// ------------------------------------------------------------------------------*/
+// IMU_CONFIG imu_config *pimu_config1,imu_config1;  /* Initialize IMU config structure */
+// pimu_config1 = &imu_config1;                      /* Set a pointer to IMU config structure */      
 // Move it to main
 /*------------------------------------------------------------------------------
  Procedures 
@@ -51,7 +51,7 @@ IMU_STATUS IMU_MAG_Read_Register
  Local variables  
 ------------------------------------------------------------------------------*/
 HAL_StatusTypeDef hal_status;
-
+I2C_HandleTypeDef *hi2c1;        /* I2C handler struct */
 /*------------------------------------------------------------------------------
  API function implementation 
 ------------------------------------------------------------------------------*/
@@ -61,7 +61,7 @@ hal_status = HAL_I2C_Mem_Read
                             (
                             hi2c1, 
                             IMU_MAG_ADDR, 
-                            reg, 
+                            reg_addr, 
                             I2C_MEMADD_SIZE_8BIT, 
                             data, 
                             1, 
@@ -90,7 +90,7 @@ else
 *******************************************************************************/
 IMU_STATUS IMU_MAG_Read_Registers
     (
-    uint8_t reg,
+    uint8_t reg_addr,
     uint8_t *data, 
     uint8_t num_registers
     )
@@ -100,7 +100,7 @@ IMU_STATUS IMU_MAG_Read_Registers
  Local variables  
 ------------------------------------------------------------------------------*/
 HAL_StatusTypeDef hal_status;
-
+I2C_HandleTypeDef *hi2c1;        /* I2C handler struct */
 /*------------------------------------------------------------------------------
  API function implementation 
 ------------------------------------------------------------------------------*/
@@ -110,7 +110,7 @@ hal_status = HAL_I2C_Mem_Read
                             (
                             hi2c1, 
                             IMU_MAG_ADDR, 
-                            reg, 
+                            reg_addr, 
                             I2C_MEMADD_SIZE_8BIT, 
                             data, 
                             num_registers, 
@@ -147,7 +147,7 @@ IMU_STATUS IMU_Read_Register
  Local variables  
 ------------------------------------------------------------------------------*/
 HAL_StatusTypeDef hal_status;
-
+I2C_HandleTypeDef *hi2c1;        /* I2C handler struct */
 /*------------------------------------------------------------------------------
  API function implementation 
 ------------------------------------------------------------------------------*/
@@ -157,7 +157,7 @@ hal_status = HAL_I2C_Mem_Read
                             (
                             hi2c1, 
                             IMU_ADDR, 
-                            reg, 
+                            reg_addr, 
                             I2C_MEMADD_SIZE_8BIT, 
                             data, 
                             1, 
@@ -185,7 +185,7 @@ return IMU_TIMEOUT;
 *******************************************************************************/
 IMU_STATUS IMU_Read_Registers
     (
-    uint8_t reg, 
+    uint8_t reg_addr, 
     uint8_t *data, 
     uint8_t num_registers
     )
@@ -195,7 +195,7 @@ IMU_STATUS IMU_Read_Registers
  Local variables  
 ------------------------------------------------------------------------------*/
 HAL_StatusTypeDef hal_status;
-
+I2C_HandleTypeDef *hi2c1;        /* I2C handler struct */
 /*------------------------------------------------------------------------------
  API function implementation 
 ------------------------------------------------------------------------------*/
@@ -205,7 +205,7 @@ hal_status = HAL_I2C_Mem_Read
                             (
                             hi2c1, 
                             IMU_ADDR, 
-                            reg, 
+                            reg_addr, 
                             I2C_MEMADD_SIZE_8BIT, 
                             data, 
                             num_registers, 
@@ -234,7 +234,7 @@ return IMU_TIMEOUT;
 
 IMU_STATUS IMU_Write_Register
     (
-    uint8_t reg, 
+    uint8_t reg_addr, 
     uint8_t *data
     )
 {
@@ -243,7 +243,7 @@ IMU_STATUS IMU_Write_Register
  Local variables  
 ------------------------------------------------------------------------------*/
 HAL_StatusTypeDef hal_status;
-
+I2C_HandleTypeDef *hi2c1;        /* I2C handler struct */
 /*------------------------------------------------------------------------------
  API function implementation 
 ------------------------------------------------------------------------------*/
@@ -251,7 +251,7 @@ hal_status = HAL_I2C_Mem_Write
             (
             hi2c1, 
             IMU_ADDR, 
-            reg, 
+            reg_addr, 
             I2C_MEMADD_SIZE_8BIT, 
             data, 
             1, 
@@ -338,7 +338,7 @@ return IMU_OK;
         x,y,z gyro values from the IMU                                                            *
 *                                                                              *
 *******************************************************************************/
-IMU_STATUS imu_get_gryo_xyz
+IMU_STATUS imu_get_gyro_xyz
     (
     IMU_DATA *pIMU
     )
@@ -396,7 +396,7 @@ return IMU_OK;
         x,y,z magnetometer values from the IMU                                                            *
 *                                                                              *
 *******************************************************************************/
-IMU_STATUS imu *imu_get_mag_xyz
+IMU_STATUS imu_get_mag_xyz
     (
     IMU_DATA *pIMU
     )
@@ -455,7 +455,7 @@ return IMU_OK;
         temperature from the IMU                                               *
 *                                                                              *
 *******************************************************************************/
-IMU_STATUS imu *imu_get_temp
+IMU_STATUS imu_get_temp
     (
     IMU_DATA *pIMU
     )
@@ -539,9 +539,9 @@ return imu_status;
 void IMU_Config_Func
     (
     IMU_CONFIG *pimu_config,
-    uint8_t  accel_setting;
-    uint16_t gyro_setting;
-    uint16_t mag_setting;
+    uint8_t  accel_setting,
+    uint16_t gyro_setting,
+    uint16_t mag_setting
     )
 {
 pimu_config->accel_setting = accel_setting;

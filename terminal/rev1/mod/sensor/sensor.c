@@ -10,6 +10,12 @@
 *******************************************************************************/
 
 /*------------------------------------------------------------------------------
+ Standard Includes                                                                     
+------------------------------------------------------------------------------*/
+#include <string.h>
+
+
+/*------------------------------------------------------------------------------
  Project Includes                                                                     
 ------------------------------------------------------------------------------*/
 #include "main.h"
@@ -47,18 +53,18 @@ SENSOR_STATUS sensor_cmd_execute
 SENSOR_STATUS sensor_subcmd_status;           /* Status indicating if 
                                                  subcommand function returned 
                                                  properly                     */
-uint32_t      sensor_readings[ NUM_SENSORS ]; /* Readings obtained from each 
-                                                 sensor                       */
-uint8_t       sensor_readings_bytes[ 4*NUM_SENSORS ];
-const uint8_t num_sensor_bytes = 4*NUM_SENSORS; /* Number of bytes to be 
-                                                   transmitted back to PC     */
+// uint32_t      sensor_readings[ NUM_SENSORS ]; /* Readings obtained from each 
+//                                                  sensor                       */
+// uint8_t       sensor_readings_bytes[ 4*NUM_SENSORS ];
+// const uint8_t num_sensor_bytes = 4*NUM_SENSORS; /* Number of bytes to be transmitted back to PC     */
 
 // IMU data size should be in header
 // imu data, imu data size, imu data byte list, memcpy the addr of firts imu data byte and imu data, imu data size
 
-uint8_t      sensor_data_byte[ IMU_DATA_SIZE ]    /*Initialize sensor data byte array
+uint8_t      sensor_data_byte[ IMU_DATA_SIZE ];    /*Initialize sensor data byte array
                                                      with size of all sensor data*/
 const uint8_t num_sensor_bytes = IMU_DATA_SIZE;
+
 /*------------------------------------------------------------------------------
  Initializations  
 ------------------------------------------------------------------------------*/
@@ -143,7 +149,7 @@ switch ( subcommand )
 *******************************************************************************/
 SENSOR_STATUS sensor_dump 
 	(
-    uint32_t* pSensor_buffer /* Pointer to buffer where sensor data should 
+    uint8_t* pSensor_buffer /* Pointer to buffer where sensor data should 
                                 be written */ 
     )
 {
@@ -163,7 +169,7 @@ accel_status         = imu_get_accel_xyz( pIMU_data );
 gyro_status          = imu_get_gyro_xyz( pIMU_data );
 mag_status           = imu_get_mag_xyz( pIMU_data );
 
-memcpy( pSensor_buffer, pIMU_DATA , IMU_DATA_SIZE)
+memcpy( pSensor_buffer, pIMU_data , IMU_DATA_SIZE);
 
 /*------------------------------------------------------------------------------
  Set command status from sensor API returns 
@@ -172,11 +178,11 @@ if ( accel_status != IMU_TIMEOUT &&
      gyro_status  != IMU_TIMEOUT &&
      mag_status   != IMU_TIMEOUT  )
     {
-        return SENSOR_OK
+        return SENSOR_OK;
     }
     else
     {
-        return SENSOR_IMU_FAIL
+        return SENSOR_IMU_FAIL;
     }
 } /* sensor_dump */
 

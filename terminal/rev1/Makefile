@@ -37,6 +37,8 @@ main.c                                                               \
 mod/commands/commands.c                                              \
 mod/led/led.c                                                        \
 mod/flash/flash.c                                                    \
+mod/imu/imu.c                                                        \
+mod/sensor/sensor.c                                                  \
 config/Src/stm32h7xx_it.c                                            \
 config/Src/stm32h7xx_hal_msp.c                                       \
 $(LIB_DIR)/Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi.c      \
@@ -126,7 +128,10 @@ C_INCLUDES =                                           \
 -I$(LIB_DIR)/Drivers/CMSIS/Include                     \
 -Imod/commands                                         \
 -Imod/flash                                            \
--Imod/led 
+-Imod/led 											   \
+-Imod/imu 											   \
+-Imod/sensor 								   		   
+
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
