@@ -37,6 +37,7 @@ main.c                                                               \
 mod/led/led.c                                                        \
 mod/commands/commands.c                                              \
 mod/ignition/ignition.c                                              \
+mod/imu/imu.c                                                        \
 config/Src/stm32h7xx_it.c                                            \
 config/Src/stm32h7xx_hal_msp.c                                       \
 $(LIB_DIR)/Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi.c      \
@@ -124,6 +125,7 @@ C_INCLUDES =                                           \
 -Imod/led                                              \
 -Imod/commands                                         \
 -Imod/ignition                                         \
+-Imod/imu                                              \
 -I$(LIB_DIR)/Drivers/STM32H7xx_HAL_Driver/Inc          \
 -I$(LIB_DIR)/Drivers/STM32H7xx_HAL_Driver/Inc/Legacy   \
 -I$(LIB_DIR)/Drivers/CMSIS/Device/ST/STM32H7xx/Include \
