@@ -357,9 +357,9 @@ IMU_STATUS  imu_status_z;
  API function implementation 
 ------------------------------------------------------------------------------*/
 // Read GYRO_X, GYRO_Y, GYRO_Z high byte and low byte registers
-imu_status_x             = IMU_Read_Registers(GYRO_ZOUT_H, &regGyroZ[0],2);
-imu_status_y             = IMU_Read_Registers(GYRO_XOUT_H, &regGyroX[0],2);
-imu_status_z             = IMU_Read_Registers(GYRO_YOUT_H, &regGyroY[0],2);
+imu_status_x             = IMU_Read_Registers(GYRO_ZOUT_H, &regGyroX[0],2);
+imu_status_y             = IMU_Read_Registers(GYRO_XOUT_H, &regGyroY[0],2);
+imu_status_z             = IMU_Read_Registers(GYRO_YOUT_H, &regGyroZ[0],2);
 
 /*Check for HAL IMU error*/
 if (imu_status_x == IMU_TIMEOUT || 
