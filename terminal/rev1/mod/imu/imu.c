@@ -508,7 +508,7 @@ IMU_STATUS imu_get_device_id
 /*------------------------------------------------------------------------------
  Local variables 
 ------------------------------------------------------------------------------*/
-uint8_t     regData;
+uint8_t     *regData;
 IMU_STATUS  imu_status;
 
 /*------------------------------------------------------------------------------
@@ -516,9 +516,9 @@ IMU_STATUS  imu_status;
 ------------------------------------------------------------------------------*/
 
 // Read Device ID register
-imu_status          = IMU_Read_Register(IMU_ID, regData);
+imu_status          = IMU_Read_Register(WHO_I_AM, regData);
 
-if (regData!=IMU_ID)\
+if (*regData!=IMU_ID)
     {
     imu_status = IMU_UNRECOGNIZED_OP;
     }
