@@ -13,7 +13,9 @@
 /*------------------------------------------------------------------------------
  Standard Includes                                                                     
 ------------------------------------------------------------------------------*/
-#include <stdlib.h>
+
+/* >>>>> why do we need this? */
+//#include <stdlib.h>
 
 /*------------------------------------------------------------------------------
  Project Includes                                                                     
@@ -21,6 +23,7 @@
 #include "main.h"
 #include "imu.h"
 
+/* >>>> Delete the default config */
 // /*------------------------------------------------------------------------------
 //  Default config for IMU 
 // ------------------------------------------------------------------------------*/
@@ -43,7 +46,9 @@
 IMU_STATUS IMU_MAG_Read_Register
     (
     uint8_t reg_addr,
+	/* Colton >> pdata */
     uint8_t *data
+	/* >> Colton */
     )
 {
     
@@ -51,7 +56,13 @@ IMU_STATUS IMU_MAG_Read_Register
  Local variables  
 ------------------------------------------------------------------------------*/
 HAL_StatusTypeDef hal_status;
+
+/* Colton >> get rid of this, make it an extern global variable  */
+/* extern I2C_HandleTypeDef hi2c1 */
+/* Pass &hi2c1 to HAL API */
 I2C_HandleTypeDef *hi2c1;        /* I2C handler struct */
+/* >> Colton */
+
 /*------------------------------------------------------------------------------
  API function implementation 
 ------------------------------------------------------------------------------*/
@@ -59,12 +70,18 @@ I2C_HandleTypeDef *hi2c1;        /* I2C handler struct */
 /*Read I2C registers*/
 hal_status = HAL_I2C_Mem_Read
                             (
+/* Colton >> Pass &hi2c1 to HAL API */
                             hi2c1, 
+/* >> Colton */
                             IMU_MAG_ADDR, 
                             reg_addr, 
                             I2C_MEMADD_SIZE_8BIT, 
+	/* Colton >> pdata */
                             data, 
+	/* >> Colton */
+	/* Colton >> sizeof(uint8_t ) */ 
                             1, 
+	/* >> Colton */
                             HAL_DEFAULT_TIMEOUT
                             );
 
@@ -88,6 +105,7 @@ else
         module in the IMU                                                      *
 *                                                                              *
 *******************************************************************************/
+/* Colton >> same as IMU_MAG_Read_Register */
 IMU_STATUS IMU_MAG_Read_Registers
     (
     uint8_t reg_addr,
@@ -118,14 +136,21 @@ hal_status = HAL_I2C_Mem_Read
                             );
 
 if (hal_status != HAL_TIMEOUT) 
+/* Colton >> formating */
+/* if () 
+	{
+	return IMU_OK;
+	}*/
 {
     return IMU_OK;
 }
+/* >> Colton */
 else 
 {
     return IMU_TIMEOUT;
 }
 } /* IMU_MAG_Read_Registers */
+/*  >> Colton */
 
 /*******************************************************************************
 *                                                                              *
@@ -136,6 +161,7 @@ else
 * 		Read one register from acceleration and gyroscope module in the IMU    *
 *                                                                              *
 *******************************************************************************/
+/* Colton >> same as IMU_MAG_Read_Register */
 IMU_STATUS IMU_Read_Register
     (
     uint8_t reg_addr, 
@@ -172,6 +198,7 @@ else
 return IMU_TIMEOUT;
 }
 } /* IMU_Read_Register */
+/* >> Colton */
 
 /*******************************************************************************
 *                                                                              *
@@ -183,6 +210,7 @@ return IMU_TIMEOUT;
         and gyroscope module in the IMU                                   *
 *                                                                              *
 *******************************************************************************/
+/* Colton >> same as IMU_MAG_Read_Register */
 IMU_STATUS IMU_Read_Registers
     (
     uint8_t reg_addr, 
@@ -221,6 +249,7 @@ else
 return IMU_TIMEOUT;
 }
 } /* IMU_Read_Registers */
+/* >> Colton */
 
 /*******************************************************************************
 *                                                                              *
@@ -231,6 +260,7 @@ return IMU_TIMEOUT;
 * 		Write one register to the IMU                                          *
 *                                                                              *
 *******************************************************************************/
+/* Colton >> same as IMU_MAG_Read_Register */
 
 IMU_STATUS IMU_Write_Register
     (
@@ -267,6 +297,7 @@ else
 return IMU_TIMEOUT;
 }
 } /* IMU_Write_Register */
+/* >> Colton */
 
 /*******************************************************************************
 *                                                                              *
@@ -298,7 +329,7 @@ IMU_STATUS          imu_status_z;
 ------------------------------------------------------------------------------*/
 
 // Read ACCEL_X, ACCEL_Y, ACCEL_Z high byte and low byte registers
-imu_status_x                  = IMU_Read_Registers(ACCEL_XOUT_H, &regAccelX[0],2);
+imu_status_x                  = IMU_Read_Registers(ACCEL_XOUT_H, &regAccelX[0], /* Colton >> sizeof( regAccelX ) */ 2 /* > Colton */);
 imu_status_y                  = IMU_Read_Registers(ACCEL_YOUT_H, &regAccelY[0],2);
 imu_status_z                  = IMU_Read_Registers(ACCEL_ZOUT_H, &regAccelZ[0],2);
 
@@ -306,9 +337,15 @@ imu_status_z                  = IMU_Read_Registers(ACCEL_ZOUT_H, &regAccelZ[0],2
 if ( imu_status_x == IMU_TIMEOUT || 
      imu_status_y == IMU_TIMEOUT || 
      imu_status_z == IMU_TIMEOUT )
+/* Colton >> formatting 
+if ()
+	{
+	}
+	*/
 {
     return IMU_TIMEOUT;
 }
+/* >> Colton */
 
 // Combine high byte and low byte to 16 bit data 
 uint16_t accel_x_raw    = ((uint16_t)regAccelX[0]<<8) | regAccelX[1];
@@ -338,6 +375,7 @@ return IMU_OK;
         x,y,z gyro values from the IMU                                                            *
 *                                                                              *
 *******************************************************************************/
+/* Colton >> Same as imu_get_accel_xyz */
 IMU_STATUS imu_get_gyro_xyz
     (
     IMU_DATA *pIMU
@@ -385,6 +423,7 @@ pIMU->gyro_z = gyro_z_raw;
 
 return IMU_OK;
 } /* imu_get_gyro_xyz */
+/* >> Colton */
 
 /*******************************************************************************
 *                                                                              *
@@ -396,6 +435,7 @@ return IMU_OK;
         x,y,z magnetometer values from the IMU                                                            *
 *                                                                              *
 *******************************************************************************/
+/* Colton >> Same as imu_get_accel_xyz */
 IMU_STATUS imu_get_mag_xyz
     (
     IMU_DATA *pIMU
@@ -444,6 +484,7 @@ pIMU->mag_z = mag_z_raw;
 
 return IMU_OK;
 } /* imu_get_mag_xyz */
+/* >> Colton */
 
 /*******************************************************************************
 *                                                                              *
@@ -508,7 +549,9 @@ IMU_STATUS imu_get_device_id
 /*------------------------------------------------------------------------------
  Local variables 
 ------------------------------------------------------------------------------*/
+/* Colton >> pointer convention: pregData or regData_ptr */
 uint8_t     *regData;
+/*  >> Colton */
 IMU_STATUS  imu_status;
 
 /*------------------------------------------------------------------------------
@@ -516,7 +559,9 @@ IMU_STATUS  imu_status;
 ------------------------------------------------------------------------------*/
 
 // Read Device ID register
+/* Colton >> Stay consistent with data sheet (WHO_AM_I )*/
 imu_status          = IMU_Read_Register(WHO_I_AM, regData);
+/* >> Colton */
 
 if (*regData!=IMU_ID)
     {
