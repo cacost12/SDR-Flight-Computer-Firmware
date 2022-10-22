@@ -41,7 +41,9 @@
 ------------------------------------------------------------------------------*/
 UART_HandleTypeDef huart1; /* USB UART handler struct           */
 SPI_HandleTypeDef  hspi2;  /* SPI handler struct for flash chip */
+/* Colton >> I2C2 */
 I2C_HandleTypeDef hi2c1; /* I2C handler struct */
+/* >> Colton */
 
 /*------------------------------------------------------------------------------
  Function prototypes                                                          
@@ -51,7 +53,9 @@ static void GPIO_Init          ( void ); /* GPIO configurations               */
 static void USB_UART_Init      ( void ); /* USB UART configuration            */
 static void FLASH_SPI_Init     ( void ); /* FLASH SPI configuration           */
 static void MPU_Config(void);
+/* Colton >> Change the name to IMU_GPS_I2C_Init */
 static void MX_I2C1_Init(void);
+/* >> Colton */
 
 /*------------------------------------------------------------------------------
  Application entry point                    k                                  
