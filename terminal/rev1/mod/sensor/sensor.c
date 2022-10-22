@@ -80,10 +80,12 @@ const uint8_t num_sensor_bytes = IMU_DATA_SIZE;
 //     }
 
 /* Set sensor readings to zero */
+/* Colton >> use memset ( memset( &sensor_data_byte[0], 0, sizeof( sensor_data_byte )) )*/
 for ( uint8_t i = 0; i < num_sensor_bytes; ++i )
 	{
     sensor_data_byte[i] = 0;
     }
+/* >> Colton */
 
 /*------------------------------------------------------------------------------
  Execute Sensor Subcommand 
@@ -161,6 +163,8 @@ IMU_STATUS gyro_status;
 IMU_STATUS mag_status;
 IMU_DATA      *pIMU_data,IMU_data;                 /*Initialize IMU structure*/
 pIMU_data     = &IMU_data;                         /*Initialize pointer to IMU structure*/
+
+
 /*------------------------------------------------------------------------------
  Call sensor API functions 
 ------------------------------------------------------------------------------*/
