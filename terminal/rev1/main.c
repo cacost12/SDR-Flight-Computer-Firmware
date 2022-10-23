@@ -41,9 +41,8 @@
 ------------------------------------------------------------------------------*/
 UART_HandleTypeDef huart1; /* USB UART handler struct           */
 SPI_HandleTypeDef  hspi2;  /* SPI handler struct for flash chip */
-/* Colton >> I2C2 */
-I2C_HandleTypeDef hi2c1; /* I2C handler struct */
-/* >> Colton */
+I2C_HandleTypeDef hi2c2; /* I2C handler struct */
+
 
 /*------------------------------------------------------------------------------
  Function prototypes                                                          
@@ -53,12 +52,10 @@ static void GPIO_Init          ( void ); /* GPIO configurations               */
 static void USB_UART_Init      ( void ); /* USB UART configuration            */
 static void FLASH_SPI_Init     ( void ); /* FLASH SPI configuration           */
 static void MPU_Config(void);
-/* Colton >> Change the name to IMU_GPS_I2C_Init */
-static void MX_I2C1_Init(void);
-/* >> Colton */
+static void IMU_GPS_I2C_Init(void);
 
 /*------------------------------------------------------------------------------
- Application entry point                    k                                  
+ Application entry point                                                      
 ------------------------------------------------------------------------------*/
 int main
 	(
@@ -80,7 +77,6 @@ uint8_t data;                                     /* USB Incoming Data Buffer */
 uint8_t sensor_subcommand;  /*Sensor subcommand*/
 
 
-
 /*------------------------------------------------------------------------------
  MCU Initialization                                                                  
 ------------------------------------------------------------------------------*/
@@ -90,8 +86,6 @@ SystemClock_Config(); /* System clock                                         */
 GPIO_Init();          /* GPIO                                                 */
 USB_UART_Init();      /* USB UART                                             */
 FLASH_SPI_Init();     /* External flash chip                                  */
-MX_I2C1_Init();
-// IMU_Config_Func(pimu_config1,2,250,4800); /* Initialize IMU config            */
 
 /*------------------------------------------------------------------------------
  Event Loop                                                                  
@@ -441,40 +435,40 @@ HAL_GPIO_Init(FLASH_SS_GPIO_PORT, &GPIO_InitStruct);
 } /* GPIO_Init */
 
 
-static void MX_I2C1_Init(void)
+static void IMU_GPS_I2C_Init(void)
 {
 
-  /* USER CODE BEGIN I2C1_Init 0 */
+  /* USER CODE BEGIN I2C2_Init 0 */
 
-  /* USER CODE END I2C1_Init 0 */
+  /* USER CODE END I2C2_Init 0 */
 
-  /* USER CODE BEGIN I2C1_Init 1 */
+  /* USER CODE BEGIN I2C2_Init 1 */
 
-  /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x00C0EAFF;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  /* USER CODE END I2C2_Init 1 */
+  hi2c2.Instance = I2C2;
+  hi2c2.Init.Timing = 0x00C0EAFF;
+  hi2c2.Init.OwnAddress1 = 0;
+  hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c2.Init.OwnAddress2 = 0;
+  hi2c2.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c2) != HAL_OK)
   {
     Error_Handler();
   }
 
   /** Configure Analogue filter
   */
-  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c2, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
   {
     Error_Handler();
   }
 
   /** Configure Digital filter
   */
-  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c2, 0) != HAL_OK)
   {
     Error_Handler();
   }
