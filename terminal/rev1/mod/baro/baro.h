@@ -21,37 +21,52 @@ extern "C" {
  Typdefs 
 ------------------------------------------------------------------------------*/
 
+/* Return codes for API functions */
+typedef enum BARO_STATUS
+	{
+	BARO_OK                     ,
+	BARO_FAIL                   , 
+	BARO_TIMEOUT                ,
+	BARO_UNRECOGNIZED_HAL_STATUS,
+	BARO_I2C_ERROR
+	} BARO_STATUS;
 
 /*------------------------------------------------------------------------------
  Macros 
 ------------------------------------------------------------------------------*/
 
+/* I2C Device Params */
+#define BARO_I2C_ADDR	    ( 0x76 << 1 )	/* 1110110 -> 0x76 */
+
+
+/* Barometric Pressure Sensor register addresses */
+#define BARO_REG_CHIP_ID	( 0x00      )
 
 /*------------------------------------------------------------------------------
  Function Prototypes 
 ------------------------------------------------------------------------------*/
 
 /* verifies sensor can be accessed */
-void baro_get_device_id
+BARO_STATUS baro_get_device_id
 	(
-    void
+   	uint8_t* baro_id 
 	);
 
 
 /* gets pressure data from sensor */
-void baro_get_pressure
+BARO_STATUS baro_get_pressure
 	(
     void
 	);
 
 /* gets temp data from sensor */
-void baro_get_temp
+BARO_STATUS baro_get_temp
 	(
     void
 	);
 
 /* converts pressure and temp data into altitude --> do research on formula */
-void baro_get_altitude
+BARO_STATUS baro_get_altitude
 	(
     void
 	);
