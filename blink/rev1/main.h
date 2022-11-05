@@ -1,12 +1,11 @@
 /*******************************************************************************
-*
-* FILE: 
-* 		main.c
-*
-* DESCRIPTION: 
-* 		Processes commands recieved from a host PC, provides fine control over 
-*       flight computer hardware resources
-*
+*                                                                              *
+* PROCEDURE:                                                                   *
+*       GPIO_Init                                                              * 
+*                                                                              *
+* DESCRIPTION:                                                                 * 
+*       Initializes all GPIO pins and sets alternate functions                 *
+*                                                                              *
 *******************************************************************************/
 
 /* Define to prevent recursive inclusion -------------------------------------*/
@@ -17,9 +16,8 @@
 extern "C" {
 #endif
 
-
 /*------------------------------------------------------------------------------
- Includes                                                                    
+Includes                                                                    
 ------------------------------------------------------------------------------*/
 #include "stm32h7xx_hal.h"
 
@@ -28,15 +26,9 @@ extern "C" {
 Macros  
 ------------------------------------------------------------------------------*/
 
-/* General MCU HAL related macros */
-#define HAL_DEFAULT_TIMEOUT    ( 1  )   /* Default timeout for polling 
-                                           operations                         */
-#define HAL_SENSOR_TIMEOUT     ( 40 )  /* Larger timeout for sensor polling   */
-#define DEF_BUFFER_SIZE        ( 16 )  /* Default size of buffer arrays       */
-
 
 /*------------------------------------------------------------------------------
- Exported functions prototypes                                             
+Exported functions prototypes                                             
 ------------------------------------------------------------------------------*/
 void Error_Handler(void);
 

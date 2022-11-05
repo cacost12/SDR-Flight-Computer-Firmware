@@ -4,8 +4,7 @@
 * 		main.c
 *
 * DESCRIPTION: 
-* 		Processes commands recieved from a host PC, provides fine control over 
-*       flight computer hardware resources
+* 		Data logger - Logs sensor data during flight to flash memory	
 *
 *******************************************************************************/
 
@@ -29,16 +28,9 @@
 #include "baro.h"
 #include "usb.h"
 
-#include "imu.h"
-#include "sensor.h"
 
 /*------------------------------------------------------------------------------
  Global Variables                                                                  
-------------------------------------------------------------------------------*/
-
-
-/*------------------------------------------------------------------------------
- Typedefs                                                                  
 ------------------------------------------------------------------------------*/
 
 
@@ -54,14 +46,13 @@ SPI_HandleTypeDef  hspi2;   /* External flash */
 /*------------------------------------------------------------------------------
  Function prototypes                                                          
 ------------------------------------------------------------------------------*/
-void	      SystemClock_Config ( void ); /* clock configuration               */
+void	    SystemClock_Config ( void ); /* clock configuration               */
 static void GPIO_Init          ( void ); /* GPIO configurations               */
 static void USB_UART_Init      ( void ); /* USB UART configuration            */
 static void Baro_I2C_Init      ( void ); /* Baro sensor I2C configuration     */
-static void IMU_GPS_I2C2_Init  ( void ); /* IMU/GPS I2C configuration         */
+static void IMU_GPS_I2C_Init   ( void ); /* IMU/GPS I2C configuration         */
 static void FLASH_SPI_Init     ( void ); /* FLASH SPI configuration           */
-static void MPU_Config(void);
-static void IMU_GPS_I2C_Init(void);
+
 
 /*------------------------------------------------------------------------------
  Application entry point                                                      
@@ -74,17 +65,8 @@ int main
 /*------------------------------------------------------------------------------
  Local Variables                                                                  
 ------------------------------------------------------------------------------*/
-uint8_t    rx_data;                                  /* USB Incoming Data Buffer */
-USB_STATUS command_status; /* Status of USB HAL        */
-uint8_t    data;
-
-// TODO: Uncomment when ignition command has been re-implemented for the 
-//       flight computer
-//uint8_t ign_subcommand; /* Ignition subcommand code */
-//uint8_t ign_status;     /* Ignition status code     */
-// IMU_DATA *pIMU_data,IMU_data; /*Initialize IMU structure*/
-// pIMU_data = &IMU_data;        /*Initialize pointer to IMU structure*/
-uint8_t sensor_subcommand;  /*Sensor subcommand*/
+uint8_t    usb_rx_data;    /* USB Incoming Data Buffer */
+USB_STATUS usb_status;     /* Status of USB HAL        */
 
 
 /*------------------------------------------------------------------------------
@@ -96,8 +78,27 @@ SystemClock_Config(); /* System clock                                         */
 GPIO_Init();          /* GPIO                                                 */
 USB_UART_Init();      /* USB UART                                             */
 Baro_I2C_Init();      /* Barometric pressure sensor                           */
-IMU_GPS_I2C2_Init();  /* IMU and GPS                                          */
+IMU_GPS_I2C_Init();   /* IMU and GPS                                          */
 FLASH_SPI_Init();     /* External flash chip                                  */
+
+
+/*------------------------------------------------------------------------------
+ Initial Setup 
+------------------------------------------------------------------------------*/
+
+/* Check switch pin */
+if ( ign_switch_cont() )
+	{
+	led_set_color( LED_RED );
+	while ( 1 )
+		{
+		/* Idle */
+		}
+	}
+else
+	{
+	led_set_color( LED_GREEN );
+ 	}
 
 
 /*------------------------------------------------------------------------------
@@ -105,81 +106,29 @@ FLASH_SPI_Init();     /* External flash chip                                  */
 ------------------------------------------------------------------------------*/
 while (1)
 	{
-	/* Get sdec command from USB port */
-	command_status = usb_receive( 
-                                 &rx_data, 
-                                 sizeof( rx_data ), 
-                                 HAL_DEFAULT_TIMEOUT 
-                                );
-
-	/* Parse command input if HAL_UART_Receive doesn't timeout */
-	if ( command_status == USB_OK )
+	/* Poll usb port */
+	usb_status = usb_receive( 
+                             &usb_rx_data, 
+                             sizeof( usb_rx_data ), 
+                             HAL_DEFAULT_TIMEOUT 
+                            );
+	if ( usb_status == USB_OK ) /* Enter USB mode  */
 		{
-		switch( rx_data )
-			{
-			/*------------------------- Ping Command -------------------------*/
-			case PING_OP:
-				{
-				ping();
-				break;
-				}
-
-			/*------------------------ Connect Command ------------------------*/
-			case CONNECT_OP:
-				{
-				ping();
-				break;
-				}
-      /*------------------------ Sensor Command ------------------------*/
-      // TODO: sensor command is currently being implemented
-      case SENSOR_OP:
-        {
-        // Receive sensor subcommand 
-        command_status = HAL_UART_Receive(&huart1, &sensor_subcommand, 1, 1);
-        if (command_status != HAL_TIMEOUT)
-        {
-        // Execute sensor subcommand
-        SENSOR_STATUS sensor_status = sensor_cmd_execute(sensor_subcommand);
-        }
-        else 
-        {
-          Error_Handler();
-        }
-        }
-			/*------------------------ Ignite Command -------------------------*/
-			// TODO: Ignite command is currently implemented for the liquid engine 
-			//       controller, implement for the flight computer
-			//case IGNITE_OP:
-
-			/* Recieve ignition subcommand over USB */
-			//   command_status = HAL_UART_Receive(&huart6, &ign_subcommand, 1, 1);
-
-			/* Execute subcommand */
-			//  if (command_status != HAL_TIMEOUT)
-			//      {
-			/* Execute subcommand*/
-			//     ign_status = ign_cmd_execute(ign_subcommand);
-			//       }
-			//  else
-			//      {
-			/* Error: no subcommand recieved */
-			//       Error_Handler();
-			//      }
-
-			/* Return response code to terminal */
-			// HAL_UART_Transmit(&huart6, &ign_status, 1, 1);
-			//break; 
-
-			default:
-				{
-				/* Unsupported command code flash the red LED */
-				led_error_flash();
-				}
-			}
+		// Send ACK signal
+		// Execute command
 		}
-	else /* USB connection times out */
+
+	/* Poll switch */
+	if ( ign_switch_cont() ) /* Enter data logger mode */
 		{
-		/* Do Nothing */
+		// Erase Flash 
+		while ( 1 )
+			{
+			// Check memory
+			// Poll sensors
+			// Write to flash
+			// Update memory pointer
+			}
 		}
 
 	}
@@ -266,7 +215,7 @@ if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
 * 		Initializes the microcontroller I2C Interface for the IMU and GPS      *
 *                                                                              *
 *******************************************************************************/
-static void IMU_GPS_I2C2_Init
+static void IMU_GPS_I2C_Init
 	(
 	void
 	)
@@ -562,82 +511,16 @@ HAL_GPIO_Init( DROGUE_CONT_GPIO_PORT, &GPIO_InitStruct );
 } /* GPIO_Init */
 
 
-static void IMU_GPS_I2C_Init(void)
-{
 
-  /* USER CODE BEGIN I2C2_Init 0 */
-
-  /* USER CODE END I2C2_Init 0 */
-
-  /* USER CODE BEGIN I2C2_Init 1 */
-
-  /* USER CODE END I2C2_Init 1 */
-  hi2c2.Instance = I2C2;
-  hi2c2.Init.Timing = 0x00C0EAFF;
-  hi2c2.Init.OwnAddress1 = 0;
-  hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c2.Init.OwnAddress2 = 0;
-  hi2c2.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-  hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Analogue filter
-  */
-  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c2, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Digital filter
-  */
-  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c2, 0) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C1_Init 2 */
-
-  /* USER CODE END I2C1_Init 2 */
-
-}
-
-
-void MPU_Config(void)
-{
-  MPU_Region_InitTypeDef MPU_InitStruct = {0};
-
-  /* Disables the MPU */
-  HAL_MPU_Disable();
-
-  /** Initializes and configures the Region and the memory to be protected
-  */
-  MPU_InitStruct.Enable = MPU_REGION_ENABLE;
-  MPU_InitStruct.Number = MPU_REGION_NUMBER0;
-  MPU_InitStruct.BaseAddress = 0x0;
-  MPU_InitStruct.Size = MPU_REGION_SIZE_4GB;
-  MPU_InitStruct.SubRegionDisable = 0x87;
-  MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
-  MPU_InitStruct.AccessPermission = MPU_REGION_NO_ACCESS;
-  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
-  MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
-  MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
-  MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
-
-  HAL_MPU_ConfigRegion(&MPU_InitStruct);
-  /* Enables the MPU */
-  HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
-
-}
-
-
-/**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   *
+*       Error_Handler                                                          * 
+*                                                                              *
+* DESCRIPTION:                                                                 * 
+*       This function is executed in case of error occurrence                  *
+*                                                                              *
+*******************************************************************************/
 void Error_Handler(void)
 {
     __disable_irq();

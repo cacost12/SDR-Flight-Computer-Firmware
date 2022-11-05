@@ -6,7 +6,7 @@
 ######################################
 # target
 ######################################
-TARGET = A0002-Firmware
+TARGET = data-logger
 
 
 ######################################
@@ -26,10 +26,10 @@ OPT = -Og
 BUILD_DIR = build
 
 # Library directory
-LIB_DIR = ../../lib
+LIB_DIR = ../../../lib
 
 # Module Directory
-MOD_DIR = ../../mod
+MOD_DIR = ../../../mod
 
 ######################################
 # source
@@ -37,11 +37,13 @@ MOD_DIR = ../../mod
 # C sources
 C_SOURCES =                                                          \
 main.c                                                               \
-mod/commands/commands.c                                              \
-mod/led/led.c                                                        \
-mod/flash/flash.c                                                    \
-mod/imu/imu.c                                                        \
-mod/sensor/sensor.c                                                  \
+$(MOD_DIR)/led/led.c                                                 \
+$(MOD_DIR)/commands/commands.c                                       \
+$(MOD_DIR)/ignition/ignition.c                                       \
+$(MOD_DIR)/baro/baro.c                                               \
+$(MOD_DIR)/imu/imu.c                                                 \
+$(MOD_DIR)/flash/flash.c                                             \
+$(MOD_DIR)/usb/usb.c                                                 \
 config/Src/stm32h7xx_it.c                                            \
 config/Src/stm32h7xx_hal_msp.c                                       \
 config/Src/system_stm32h7xx.c                                        \
@@ -116,8 +118,7 @@ AS_DEFS =
 C_DEFS =         \
 -DUSE_HAL_DRIVER \
 -DSTM32H750xx    \
--DA0002_REV1     \
--DTERMINAL
+-DA0002_REV1
 
 
 # AS includes
@@ -138,13 +139,7 @@ C_INCLUDES =                                           \
 -I$(LIB_DIR)/Drivers/STM32H7xx_HAL_Driver/Inc          \
 -I$(LIB_DIR)/Drivers/STM32H7xx_HAL_Driver/Inc/Legacy   \
 -I$(LIB_DIR)/Drivers/CMSIS/Device/ST/STM32H7xx/Include \
--I$(LIB_DIR)/Drivers/CMSIS/Include                     \
--Imod/commands                                         \
--Imod/flash                                            \
--Imod/led 											   \
--Imod/imu 											   \
--Imod/sensor 								   		   
-
+-I$(LIB_DIR)/Drivers/CMSIS/Include                     
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
