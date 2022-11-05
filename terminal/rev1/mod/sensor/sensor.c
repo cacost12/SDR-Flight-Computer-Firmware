@@ -61,9 +61,14 @@ SENSOR_STATUS sensor_subcmd_status;           /* Status indicating if
 // IMU data size should be in header
 // imu data, imu data size, imu data byte list, memcpy the addr of firts imu data byte and imu data, imu data size
 
-uint8_t      sensor_data_byte[ IMU_DATA_SIZE ];    /*Initialize sensor data byte array
+// uint8_t      sensor_data_byte[ IMU_DATA_SIZE ];    /*Initialize sensor data byte array
+//                                                      with size of all sensor data*/
+// const uint8_t num_sensor_bytes = IMU_DATA_SIZE;
+
+// TODO: Implement sensor_data_byte with a size of sensor data
+uint8_t      sensor_data_byte[ SENSOR_DATA_SIZE ]; /*Initialize sensor data byte array
                                                      with size of all sensor data*/
-const uint8_t num_sensor_bytes = IMU_DATA_SIZE;
+const uint8_t num_sensor_bytes = SENSOR_DATA_SIZE;
 
 /*------------------------------------------------------------------------------
  Initializations  
@@ -80,12 +85,18 @@ const uint8_t num_sensor_bytes = IMU_DATA_SIZE;
 //     }
 
 /* Set sensor readings to zero */
-/* Colton >> use memset ( memset( &sensor_data_byte[0], 0, sizeof( sensor_data_byte )) )*/
-for ( uint8_t i = 0; i < num_sensor_bytes; ++i )
-	{
-    sensor_data_byte[i] = 0;
-    }
-/* >> Colton */
+
+// for ( uint8_t i = 0; i < num_sensor_bytes; ++i )
+// 	{
+//     sensor_data_byte[i] = 0;
+//  }
+memset
+( 
+&sensor_data_byte[0],
+0,
+sizeof( sensor_data_byte )
+);
+
 
 /*------------------------------------------------------------------------------
  Execute Sensor Subcommand 
@@ -151,8 +162,8 @@ switch ( subcommand )
 *******************************************************************************/
 SENSOR_STATUS sensor_dump 
 	(
-    uint8_t* pSensor_buffer /* Pointer to buffer where sensor data should 
-                                be written */ 
+    uint8_t*        pSensor_buffer /* Pointer to buffer where sensor data should 
+                                   be written */ 
     )
 {
 /*------------------------------------------------------------------------------
@@ -164,16 +175,32 @@ IMU_STATUS mag_status;
 IMU_DATA      *pIMU_data,IMU_data;                 /*Initialize IMU structure*/
 pIMU_data     = &IMU_data;                         /*Initialize pointer to IMU structure*/
 
+SENSOR_DATA sensor_data;
+uint16_t    dummy_baro_pressure;
+uint16_t    dummy_baro_temp;
 
 /*------------------------------------------------------------------------------
  Call sensor API functions 
 ------------------------------------------------------------------------------*/
+// TODO: Pass the sensor_data_ptr -> imu_data
+accel_status         = imu_get_accel_xyz( sensor_data->pIMU_data ); 
+gyro_status          = imu_get_gyro_xyz( sensor_data->pIMU_data );
+mag_status           = imu_get_mag_xyz( sensor_data->pIMU_data );
 
-accel_status         = imu_get_accel_xyz( pIMU_data );
-gyro_status          = imu_get_gyro_xyz( pIMU_data );
-mag_status           = imu_get_mag_xyz( pIMU_data );
+// accel_status         = imu_get_accel_xyz( pIMU_data ); 
+// gyro_status          = imu_get_gyro_xyz( pIMU_data );
+// mag_status           = imu_get_mag_xyz( pIMU_data );
 
-memcpy( pSensor_buffer, pIMU_data , IMU_DATA_SIZE);
+// memcpy( pSensor_buffer, sensor_data->pIMU_data , IMU_DATA_SIZE);
+
+// TODO: Implement the actual get baro values
+sensor_data->dummy_baro_pressure = dummy_baro_pressure;
+sensor_data->dummy_baro_temp     = dummy_baro_temp;
+
+sensor_data->timer               = HAL_GetTick();
+
+// TODO: Implement memcpy sensor_data struct to pSensor_buffer
+memcpy(pSensor_buffer, sensor_data, SENSOR_DATA_SIZE);
 
 /*------------------------------------------------------------------------------
  Set command status from sensor API returns 

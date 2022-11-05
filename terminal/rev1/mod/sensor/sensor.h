@@ -27,7 +27,7 @@
 /* General */
 #define NUM_SENSORS         ( 1   )
 #define IMU_DATA_SIZE       ( 18  )
-
+#define SENSOR_DATA_SIZE	( 26  )
 
 /*------------------------------------------------------------------------------
  Typdefs 
@@ -41,6 +41,14 @@ typedef enum
     SENSOR_FAIL
     } SENSOR_STATUS;
 
+typedef SENSOR_DATA
+	{
+	uint32_t timer,
+	IMU_DATA imu_data,
+	// TODO: Pass the real baro values
+	uint16_t dummy_baro_pressure,
+	uint16_t dummy_baro_temp	
+	}
 
 /*------------------------------------------------------------------------------
  Public Function Prototypes 

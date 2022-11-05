@@ -14,8 +14,6 @@
  Standard Includes                                                                     
 ------------------------------------------------------------------------------*/
 
-/* >>>>> why do we need this? */
-//#include <stdlib.h>
 
 /*------------------------------------------------------------------------------
  Project Includes                                                                     
@@ -23,13 +21,12 @@
 #include "main.h"
 #include "imu.h"
 
-/* >>>> Delete the default config */
-// /*------------------------------------------------------------------------------
-//  Default config for IMU 
-// ------------------------------------------------------------------------------*/
-// IMU_CONFIG imu_config *pimu_config1,imu_config1;  /* Initialize IMU config structure */
-// pimu_config1 = &imu_config1;                      /* Set a pointer to IMU config structure */      
-// Move it to main
+/*------------------------------------------------------------------------------
+ Global Variables                                                                  
+------------------------------------------------------------------------------*/
+extern I2C_HandleTypeDef hi2c2;
+
+
 /*------------------------------------------------------------------------------
  Procedures 
 ------------------------------------------------------------------------------*/
@@ -45,10 +42,8 @@
 *******************************************************************************/
 IMU_STATUS IMU_MAG_Read_Register
     (
-    uint8_t reg_addr,
-	/* Colton >> pdata */
-    uint8_t *data
-	/* >> Colton */
+    uint8_t reg_addr,	
+    uint8_t *pData
     )
 {
     
@@ -57,11 +52,6 @@ IMU_STATUS IMU_MAG_Read_Register
 ------------------------------------------------------------------------------*/
 HAL_StatusTypeDef hal_status;
 
-/* Colton >> get rid of this, make it an extern global variable  */
-/* extern I2C_HandleTypeDef hi2c1 */
-/* Pass &hi2c1 to HAL API */
-I2C_HandleTypeDef *hi2c1;        /* I2C handler struct */
-/* >> Colton */
 
 /*------------------------------------------------------------------------------
  API function implementation 
@@ -70,18 +60,12 @@ I2C_HandleTypeDef *hi2c1;        /* I2C handler struct */
 /*Read I2C registers*/
 hal_status = HAL_I2C_Mem_Read
                             (
-/* Colton >> Pass &hi2c1 to HAL API */
-                            hi2c1, 
-/* >> Colton */
+                            &hi2c2, 
                             IMU_MAG_ADDR, 
                             reg_addr, 
                             I2C_MEMADD_SIZE_8BIT, 
-	/* Colton >> pdata */
-                            data, 
-	/* >> Colton */
-	/* Colton >> sizeof(uint8_t ) */ 
-                            1, 
-	/* >> Colton */
+                            pData, 
+                            sizeof( uint8_t ), 
                             HAL_DEFAULT_TIMEOUT
                             );
 
@@ -101,15 +85,15 @@ else
 * 		IMU_MAG_Read_Registers                                                 *
 *                                                                              *
 * DESCRIPTION:                                                                 * 
-* 		Read the specific numbers of registers at one time from magnetometer`
-        module in the IMU                                                      *
+* 		Read the specific numbers of registers at one time from magnetometer`  *
+*        module in the IMU                                                     *
 *                                                                              *
 *******************************************************************************/
-/* Colton >> same as IMU_MAG_Read_Register */
+
 IMU_STATUS IMU_MAG_Read_Registers
     (
     uint8_t reg_addr,
-    uint8_t *data, 
+    uint8_t *pData, 
     uint8_t num_registers
     )
 {
@@ -118,7 +102,7 @@ IMU_STATUS IMU_MAG_Read_Registers
  Local variables  
 ------------------------------------------------------------------------------*/
 HAL_StatusTypeDef hal_status;
-I2C_HandleTypeDef *hi2c1;        /* I2C handler struct */
+
 /*------------------------------------------------------------------------------
  API function implementation 
 ------------------------------------------------------------------------------*/
@@ -126,31 +110,25 @@ I2C_HandleTypeDef *hi2c1;        /* I2C handler struct */
 /*Read I2C registers*/
 hal_status = HAL_I2C_Mem_Read
                             (
-                            hi2c1, 
+                            &hi2c2, 
                             IMU_MAG_ADDR, 
                             reg_addr, 
                             I2C_MEMADD_SIZE_8BIT, 
-                            data, 
+                            pData, 
                             num_registers, 
                             HAL_DEFAULT_TIMEOUT
                             );
 
 if (hal_status != HAL_TIMEOUT) 
-/* Colton >> formating */
-/* if () 
-	{
-	return IMU_OK;
-	}*/
-{
+    {
     return IMU_OK;
-}
-/* >> Colton */
+    }
 else 
-{
+    {
     return IMU_TIMEOUT;
-}
+    }
 } /* IMU_MAG_Read_Registers */
-/*  >> Colton */
+
 
 /*******************************************************************************
 *                                                                              *
@@ -161,11 +139,11 @@ else
 * 		Read one register from acceleration and gyroscope module in the IMU    *
 *                                                                              *
 *******************************************************************************/
-/* Colton >> same as IMU_MAG_Read_Register */
+
 IMU_STATUS IMU_Read_Register
     (
     uint8_t reg_addr, 
-    uint8_t *data
+    uint8_t *pData
     )
 {
 
@@ -173,7 +151,7 @@ IMU_STATUS IMU_Read_Register
  Local variables  
 ------------------------------------------------------------------------------*/
 HAL_StatusTypeDef hal_status;
-I2C_HandleTypeDef *hi2c1;        /* I2C handler struct */
+
 /*------------------------------------------------------------------------------
  API function implementation 
 ------------------------------------------------------------------------------*/
@@ -181,40 +159,41 @@ I2C_HandleTypeDef *hi2c1;        /* I2C handler struct */
 /*Read I2C register*/
 hal_status = HAL_I2C_Mem_Read
                             (
-                            hi2c1, 
+                            &hi2c2, 
                             IMU_ADDR, 
                             reg_addr, 
                             I2C_MEMADD_SIZE_8BIT, 
-                            data, 
-                            1, 
+                            pData, 
+                            sizeof( uint8_t ), 
                             HAL_MAX_DELAY
                             ); 
 
-if (hal_status != HAL_TIMEOUT){
-return IMU_OK;
-}
+if (hal_status != HAL_TIMEOUT)
+    {
+    return IMU_OK;
+    }
 else
-{
-return IMU_TIMEOUT;
-}
+    {
+    return IMU_TIMEOUT;
+    }
 } /* IMU_Read_Register */
-/* >> Colton */
+
 
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
-* 		IMU_Read_Registers                                                        *
+* 		IMU_Read_Registers                                                     *
 *                                                                              *
 * DESCRIPTION:                                                                 * 
-* 		Read the specific numbers of registers at one time from acceleration
-        and gyroscope module in the IMU                                   *
+* 		Read the specific numbers of registers at one time from acceleration   *
+*       and gyroscope module in the IMU                                        *
 *                                                                              *
 *******************************************************************************/
-/* Colton >> same as IMU_MAG_Read_Register */
+
 IMU_STATUS IMU_Read_Registers
     (
     uint8_t reg_addr, 
-    uint8_t *data, 
+    uint8_t *pData, 
     uint8_t num_registers
     )
 {
@@ -223,7 +202,7 @@ IMU_STATUS IMU_Read_Registers
  Local variables  
 ------------------------------------------------------------------------------*/
 HAL_StatusTypeDef hal_status;
-I2C_HandleTypeDef *hi2c1;        /* I2C handler struct */
+
 /*------------------------------------------------------------------------------
  API function implementation 
 ------------------------------------------------------------------------------*/
@@ -231,25 +210,25 @@ I2C_HandleTypeDef *hi2c1;        /* I2C handler struct */
 /*Read I2C register*/
 hal_status = HAL_I2C_Mem_Read
                             (
-                            hi2c1, 
+                            &hi2c2, 
                             IMU_ADDR, 
                             reg_addr, 
                             I2C_MEMADD_SIZE_8BIT, 
-                            data, 
+                            pData, 
                             num_registers, 
                             HAL_MAX_DELAY
                             );
 
 if (hal_status != HAL_TIMEOUT)
-{
-return IMU_OK;
-}
+    {
+    return IMU_OK;
+    }
 else
-{
-return IMU_TIMEOUT;
-}
+    {
+    return IMU_TIMEOUT;
+    }
 } /* IMU_Read_Registers */
-/* >> Colton */
+
 
 /*******************************************************************************
 *                                                                              *
@@ -260,12 +239,12 @@ return IMU_TIMEOUT;
 * 		Write one register to the IMU                                          *
 *                                                                              *
 *******************************************************************************/
-/* Colton >> same as IMU_MAG_Read_Register */
+
 
 IMU_STATUS IMU_Write_Register
     (
     uint8_t reg_addr, 
-    uint8_t *data
+    uint8_t *pData
     )
 {
     
@@ -273,31 +252,30 @@ IMU_STATUS IMU_Write_Register
  Local variables  
 ------------------------------------------------------------------------------*/
 HAL_StatusTypeDef hal_status;
-I2C_HandleTypeDef *hi2c1;        /* I2C handler struct */
+
 /*------------------------------------------------------------------------------
  API function implementation 
 ------------------------------------------------------------------------------*/
 hal_status = HAL_I2C_Mem_Write
             (
-            hi2c1, 
+            &hi2c2, 
             IMU_ADDR, 
             reg_addr, 
             I2C_MEMADD_SIZE_8BIT, 
-            data, 
-            1, 
+            pData, 
+            sizeof( uint8_t ), 
             HAL_MAX_DELAY
             );
 
 if (hal_status != HAL_TIMEOUT)
-{
-return IMU_OK;
-}
+    {
+    return IMU_OK;
+    }   
 else
-{
-return IMU_TIMEOUT;
-}
+    {
+    return IMU_TIMEOUT;
+    }
 } /* IMU_Write_Register */
-/* >> Colton */
 
 /*******************************************************************************
 *                                                                              *
@@ -323,29 +301,24 @@ uint8_t             regAccelZ[2];
 IMU_STATUS          imu_status_x;
 IMU_STATUS          imu_status_y;
 IMU_STATUS          imu_status_z;
+int                 read_two_bytes = 2;
 
 /*------------------------------------------------------------------------------
  API function implementation 
 ------------------------------------------------------------------------------*/
 
 // Read ACCEL_X, ACCEL_Y, ACCEL_Z high byte and low byte registers
-imu_status_x                  = IMU_Read_Registers(ACCEL_XOUT_H, &regAccelX[0], /* Colton >> sizeof( regAccelX ) */ 2 /* > Colton */);
-imu_status_y                  = IMU_Read_Registers(ACCEL_YOUT_H, &regAccelY[0],2);
-imu_status_z                  = IMU_Read_Registers(ACCEL_ZOUT_H, &regAccelZ[0],2);
+imu_status_x                  = IMU_Read_Registers(ACCEL_XOUT_H, &regAccelX[0], read_two_bytes);
+imu_status_y                  = IMU_Read_Registers(ACCEL_YOUT_H, &regAccelY[0], read_two_bytes);
+imu_status_z                  = IMU_Read_Registers(ACCEL_ZOUT_H, &regAccelZ[0], read_two_bytes);
 
 /*Check for HAL IMU error*/
 if ( imu_status_x == IMU_TIMEOUT || 
      imu_status_y == IMU_TIMEOUT || 
      imu_status_z == IMU_TIMEOUT )
-/* Colton >> formatting 
-if ()
-	{
-	}
-	*/
-{
+    {
     return IMU_TIMEOUT;
-}
-/* >> Colton */
+    }
 
 // Combine high byte and low byte to 16 bit data 
 uint16_t accel_x_raw    = ((uint16_t)regAccelX[0]<<8) | regAccelX[1];
@@ -368,14 +341,14 @@ return IMU_OK;
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
-* 		imu_get_gryo_xyz                                                        *
+* 		imu_get_gryo_xyz                                                       *
 *                                                                              *
 * DESCRIPTION:                                                                 * 
-* 		Return the pointer to structure that updates the 
-        x,y,z gyro values from the IMU                                                            *
+* 		Return the pointer to structure that updates the                       *
+*       x,y,z gyro values from the IMU                                         *
 *                                                                              *
 *******************************************************************************/
-/* Colton >> Same as imu_get_accel_xyz */
+
 IMU_STATUS imu_get_gyro_xyz
     (
     IMU_DATA *pIMU
@@ -390,22 +363,23 @@ uint8_t     regGyroZ[2];
 IMU_STATUS  imu_status_x;
 IMU_STATUS  imu_status_y;
 IMU_STATUS  imu_status_z;
+int         reading_two_bytes = 2;
 
 /*------------------------------------------------------------------------------
  API function implementation 
 ------------------------------------------------------------------------------*/
 // Read GYRO_X, GYRO_Y, GYRO_Z high byte and low byte registers
-imu_status_x             = IMU_Read_Registers(GYRO_ZOUT_H, &regGyroX[0],2);
-imu_status_y             = IMU_Read_Registers(GYRO_XOUT_H, &regGyroY[0],2);
-imu_status_z             = IMU_Read_Registers(GYRO_YOUT_H, &regGyroZ[0],2);
+imu_status_x             = IMU_Read_Registers(GYRO_ZOUT_H, &regGyroX[0], reading_two_bytes);
+imu_status_y             = IMU_Read_Registers(GYRO_XOUT_H, &regGyroY[0], reading_two_bytes);
+imu_status_z             = IMU_Read_Registers(GYRO_YOUT_H, &regGyroZ[0], reading_two_bytes);
 
 /*Check for HAL IMU error*/
 if (imu_status_x == IMU_TIMEOUT || 
     imu_status_y == IMU_TIMEOUT || 
     imu_status_z == IMU_TIMEOUT )
-{
+    {
     return IMU_TIMEOUT;
-}
+    }
 
 // Combine high byte and low byte to 16 bit data 
 uint16_t gyro_x_raw = ((uint16_t)regGyroX[0]<<8) | regGyroX[1];
@@ -423,7 +397,7 @@ pIMU->gyro_z = gyro_z_raw;
 
 return IMU_OK;
 } /* imu_get_gyro_xyz */
-/* >> Colton */
+
 
 /*******************************************************************************
 *                                                                              *
@@ -431,11 +405,11 @@ return IMU_OK;
 * 		imu_get_mag_xyz                                                        *
 *                                                                              *
 * DESCRIPTION:                                                                 * 
-* 		Return the pointer to structure that updates the 
-        x,y,z magnetometer values from the IMU                                                            *
+* 		Return the pointer to structure that updates the                       *
+*       x,y,z magnetometer values from the IMU                                 *
 *                                                                              *
 *******************************************************************************/
-/* Colton >> Same as imu_get_accel_xyz */
+
 IMU_STATUS imu_get_mag_xyz
     (
     IMU_DATA *pIMU
@@ -450,23 +424,24 @@ uint8_t     regMagZ[2];
 IMU_STATUS  imu_status_x;
 IMU_STATUS  imu_status_y;
 IMU_STATUS  imu_status_z;
+int         reading_two_bytes = 2;
 
 /*------------------------------------------------------------------------------
  API function implementation 
 ------------------------------------------------------------------------------*/
 
 // Read MAG_X, MAG_Y, MAG_Z high byte and low byte registers
-imu_status_x             = IMU_MAG_Read_Registers(MAG_XOUT_H, &regMagX[0],2);
-imu_status_y             = IMU_MAG_Read_Registers(MAG_YOUT_H, &regMagY[0],2);
-imu_status_z             = IMU_MAG_Read_Registers(MAG_ZOUT_H, &regMagZ[0],2);
+imu_status_x             = IMU_MAG_Read_Registers(MAG_XOUT_H, &regMagX[0], reading_two_bytes);
+imu_status_y             = IMU_MAG_Read_Registers(MAG_YOUT_H, &regMagY[0], reading_two_bytes);
+imu_status_z             = IMU_MAG_Read_Registers(MAG_ZOUT_H, &regMagZ[0], reading_two_bytes);
 
 /*Check for HAL IMU error*/
 if ( imu_status_x == IMU_TIMEOUT ||
      imu_status_y == IMU_TIMEOUT || 
      imu_status_z == IMU_TIMEOUT )
-{
+    {
     return IMU_TIMEOUT;
-}
+    }
 
 // Combine high byte and low byte to 16 bit data 
 uint16_t mag_x_raw  = ((uint16_t)regMagX[0]<<8) | regMagX[1];
@@ -484,7 +459,6 @@ pIMU->mag_z = mag_z_raw;
 
 return IMU_OK;
 } /* imu_get_mag_xyz */
-/* >> Colton */
 
 /*******************************************************************************
 *                                                                              *
@@ -504,27 +478,28 @@ IMU_STATUS imu_get_temp
 /*------------------------------------------------------------------------------
  Local variables 
 ------------------------------------------------------------------------------*/
-uint8_t     *regTemp;
+uint8_t     *regTemp_ptr;
 uint8_t     RoomTemp_Offset;
 uint8_t     Temp_Sensitivity;
 uint8_t     temp_degC,temp_degF;
 IMU_STATUS  imu_status;
+int         reading_two_bytes = 2;
 
 /*------------------------------------------------------------------------------
  API function implementation 
 ------------------------------------------------------------------------------*/
 
 // Read temperature high byte and low byte registers
-imu_status          = IMU_Read_Registers(TEMP_OUT_H, regTemp,2);
+imu_status          = IMU_Read_Registers(TEMP_OUT_H, regTemp_ptr, reading_two_bytes);
 
 /*Check for HAL IMU error*/
 if (imu_status == IMU_TIMEOUT)
-{
+    {
     return IMU_TIMEOUT;
-}
+    }
 
 // Combine high byte and low byte to 16 bit data 
-uint16_t raw_temp   = ((uint16_t) regTemp[0]<<8) | regTemp[1];
+uint16_t raw_temp   = ((uint16_t) regTemp_ptr[0]<<8) | regTemp_ptr[1];
 temp_degC           = ((raw_temp - RoomTemp_Offset)/Temp_Sensitivity)+21;
 
 return imu_status;
@@ -540,7 +515,7 @@ return imu_status;
 *       IMU registers are accessible                                           *
 *                                                                              *
 *******************************************************************************/
- 
+
 IMU_STATUS imu_get_device_id
     (
     IMU_DATA *pIMU
@@ -549,9 +524,7 @@ IMU_STATUS imu_get_device_id
 /*------------------------------------------------------------------------------
  Local variables 
 ------------------------------------------------------------------------------*/
-/* Colton >> pointer convention: pregData or regData_ptr */
-uint8_t     *regData;
-/*  >> Colton */
+uint8_t     *regData_ptr;
 IMU_STATUS  imu_status;
 
 /*------------------------------------------------------------------------------
@@ -559,11 +532,9 @@ IMU_STATUS  imu_status;
 ------------------------------------------------------------------------------*/
 
 // Read Device ID register
-/* Colton >> Stay consistent with data sheet (WHO_AM_I )*/
-imu_status          = IMU_Read_Register(WHO_I_AM, regData);
-/* >> Colton */
+imu_status          = IMU_Read_Register(WHO_I_AM, regData_ptr);
 
-if (*regData!=IMU_ID)
+if (regData_ptr!=IMU_ID)
     {
     imu_status = IMU_UNRECOGNIZED_OP;
     }
@@ -574,10 +545,10 @@ return imu_status;
 /*******************************************************************************
 *                                                                              *
 * PROCEDURE:                                                                   * 
-* 		imu_config                                                      *
+* 		imu_config                                                             * 
 *                                                                              *
 * DESCRIPTION:                                                                 * 
-* 		Change configuration of accel, gyro, mag                                          *
+* 		Change configuration of accel, gyro, mag                               *
 *                                                                              *
 *******************************************************************************/
 

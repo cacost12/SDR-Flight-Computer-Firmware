@@ -15,11 +15,9 @@
 
 #include "stm32h7xx_hal.h"
 
-/* Colton >> uncomment */
-// #ifdef __cplusplus
-// extern "C" {
-// #endif
-/* Colton >> uncomment */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*------------------------------------------------------------------------------
  Defines 
@@ -100,14 +98,14 @@ typedef enum IMU_STATUS{
 IMU_STATUS IMU_MAG_Read_Register
     (
     uint8_t reg_addr, 
-    uint8_t *data
+    uint8_t *pData
     );
 
 // Read the specific numbers of registers at one time from magnetometer module in the IMU 
 IMU_STATUS IMU_MAG_Read_Registers
     (
     uint8_t reg_addr,
-    uint8_t *data, 
+    uint8_t *pData, 
     uint8_t length
     );
 
@@ -115,14 +113,14 @@ IMU_STATUS IMU_MAG_Read_Registers
 IMU_STATUS IMU_Read_Register
     (
     uint8_t reg_addr, 
-    uint8_t *data
+    uint8_t *pData
     );
 
 // Read the specific numbers of registers at one time from acceleration and gyroscope module in the IMU
 IMU_STATUS IMU_Read_Registers
     (
     uint8_t reg_addr, 
-    uint8_t *data, 
+    uint8_t *pData, 
     uint8_t length
     );
 
@@ -130,7 +128,7 @@ IMU_STATUS IMU_Read_Registers
 IMU_STATUS IMU_Write_Register
     (
     uint8_t reg_addr, 
-    uint8_t *data
+    uint8_t *pData
     );
 
 // Return the pointer to structure that updates the x,y,z acceleration values from the IMU
