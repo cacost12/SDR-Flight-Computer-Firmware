@@ -27,7 +27,7 @@
 #include "flash.h"
 #include "baro.h"
 #include "usb.h"
-
+#include "sensor.h"
 
 /*------------------------------------------------------------------------------
  Global Variables                                                                  
@@ -65,10 +65,11 @@ int main
 /*------------------------------------------------------------------------------
  Local Variables                                                                  
 ------------------------------------------------------------------------------*/
-uint8_t    usb_rx_data;    /* USB Incoming Data Buffer */
-USB_STATUS usb_status;     /* Status of USB HAL        */
-
-
+uint8_t    		usb_rx_data;    				/* USB Incoming Data Buffer 			*/
+USB_STATUS 		usb_status;     				/* Status of USB HAL        			*/
+SENSOR_DATA   	*sensor_data_ptr, sensor_data;  /* Sensor data structure                */
+sensor_data_ptr = &sensor_data;					/* Sensor data pointer to its structure */
+SENSOR_STATUS	sensor_status;					/* Status of sensor						*/
 /*------------------------------------------------------------------------------
  MCU Initialization                                                                  
 ------------------------------------------------------------------------------*/
@@ -126,6 +127,7 @@ while (1)
 			{
 			// Check memory
 			// Poll sensors
+			sensor_status = sensor_dump(sensor_data_ptr);
 			// Write to flash
 			// Update memory pointer
 			}

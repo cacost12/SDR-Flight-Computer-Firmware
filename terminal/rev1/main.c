@@ -135,7 +135,7 @@ while (1)
       case SENSOR_OP:
         {
         // Receive sensor subcommand 
-        command_status = HAL_UART_Receive(&huart1, &sensor_subcommand, 1, 1);
+        command_status = HAL_UART_Receive(&huart6, &sensor_subcommand, 1, 1);
         if (command_status != HAL_TIMEOUT)
         {
         // Execute sensor subcommand

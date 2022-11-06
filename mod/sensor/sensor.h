@@ -41,7 +41,8 @@ typedef enum
     SENSOR_FAIL
     } SENSOR_STATUS;
 
-typedef struct sensor_data{
+typedef struct sensor_data
+	{
 	uint32_t time;
 	IMU_DATA imu_data;
 	// TODO: Pass the real baro values
