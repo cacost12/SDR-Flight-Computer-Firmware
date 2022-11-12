@@ -25,12 +25,16 @@
 #define IMU_ADDR                0x68<<1
 #define IMU_MAG_ADDR            0x0C<<1
 #define IMU_ID                  0x71
+
+
 /*------------------------------------------------------------------------------
  Defines subcommand codes
 ------------------------------------------------------------------------------*/
 #define IMU_DUMP_CODE               0x01
 #define IMU_POLL_CODE               0x02
 #define IMU_LIST_CODE               0x03
+
+
 /*------------------------------------------------------------------------------
  Registers
 ------------------------------------------------------------------------------*/
@@ -72,7 +76,6 @@ typedef struct imu{
     uint16_t mag_x;
     uint16_t mag_y;
     uint16_t mag_z;
-    uint16_t temp;
 } IMU_DATA;
 
 typedef struct imu_config{

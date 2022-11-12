@@ -37,11 +37,12 @@ MOD_DIR = ../../mod
 # C sources
 C_SOURCES =                                                          \
 main.c                                                               \
-mod/commands/commands.c                                              \
-mod/led/led.c                                                        \
-mod/flash/flash.c                                                    \
-mod/imu/imu.c                                                        \
-mod/sensor/sensor.c                                                  \
+$(MOD_DIR)/commands/commands.c                                       \
+$(MOD_DIR)/led/led.c                                                 \
+$(MOD_DIR)/flash/flash.c                                             \
+$(MOD_DIR)/imu/imu.c                                                 \
+$(MOD_DIR)/sensor/sensor.c                                           \
+$(MOD_DIR)/usb/usb.c                                                 \
 config/Src/stm32h7xx_it.c                                            \
 config/Src/stm32h7xx_hal_msp.c                                       \
 config/Src/system_stm32h7xx.c                                        \
@@ -135,15 +136,11 @@ C_INCLUDES =                                           \
 -I$(MOD_DIR)/imu                                       \
 -I$(MOD_DIR)/flash                                     \
 -I$(MOD_DIR)/usb                                       \
+-I$(MOD_DIR)/sensor                                    \
 -I$(LIB_DIR)/Drivers/STM32H7xx_HAL_Driver/Inc          \
 -I$(LIB_DIR)/Drivers/STM32H7xx_HAL_Driver/Inc/Legacy   \
 -I$(LIB_DIR)/Drivers/CMSIS/Device/ST/STM32H7xx/Include \
--I$(LIB_DIR)/Drivers/CMSIS/Include                     \
--Imod/commands                                         \
--Imod/flash                                            \
--Imod/led 											   \
--Imod/imu 											   \
--Imod/sensor 								   		   
+-I$(LIB_DIR)/Drivers/CMSIS/Include                     
 
 
 # compile gcc flags

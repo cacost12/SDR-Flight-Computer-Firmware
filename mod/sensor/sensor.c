@@ -25,7 +25,7 @@
 /*------------------------------------------------------------------------------
  Global Variables 
 ------------------------------------------------------------------------------*/
-extern UART_HandleTypeDef huart1; /* USB UART handler struct        */
+extern UART_HandleTypeDef huart6; /* USB UART handler struct        */
 
 
 /*------------------------------------------------------------------------------
@@ -50,47 +50,20 @@ SENSOR_STATUS sensor_cmd_execute
 /*------------------------------------------------------------------------------
  Local Variables  
 ------------------------------------------------------------------------------*/
-SENSOR_STATUS sensor_subcmd_status;           /* Status indicating if 
-                                                 subcommand function returned 
-                                                 properly                     */
-// uint32_t      sensor_readings[ NUM_SENSORS ]; /* Readings obtained from each 
-//                                                  sensor                       */
-// uint8_t       sensor_readings_bytes[ 4*NUM_SENSORS ];
-// const uint8_t num_sensor_bytes = 4*NUM_SENSORS; /* Number of bytes to be transmitted back to PC     */
-
-// IMU data size should be in header
-// imu data, imu data size, imu data byte list, memcpy the addr of firts imu data byte and imu data, imu data size
-
-// uint8_t      sensor_data_byte[ IMU_DATA_SIZE ];    /*Initialize sensor data byte array
-//                                                      with size of all sensor data*/
-// const uint8_t num_sensor_bytes = IMU_DATA_SIZE;
-
-// TODO: Implement sensor_data_byte with a size of sensor data
-uint8_t      sensor_data_byte[ SENSOR_DATA_SIZE ]; /*Initialize sensor data byte array
-                                                     with size of all sensor data*/
+SENSOR_STATUS sensor_subcmd_status;                 /* Status indicating if 
+                                                       subcommand function 
+                                                       returned properly      */
+SENSOR_DATA   sensor_data;                           /* Struct with all sensor 
+                                                        data                  */
+uint8_t       sensor_data_bytes[ SENSOR_DATA_SIZE ]; /* Byte array with sensor 
+                                                       readouts               */
 const uint8_t num_sensor_bytes = SENSOR_DATA_SIZE;
 
 /*------------------------------------------------------------------------------
  Initializations  
 ------------------------------------------------------------------------------*/
-
-// /* Set sensor readings to zero */
-// for ( uint8_t i = 0; i < NUM_SENSORS; ++i )
-// 	{
-// 	sensor_readings[i] = 0;
-//     }
-// for ( uint8_t i = 0; i < num_sensor_bytes; ++i )
-// 	{
-//     sensor_readings_bytes[i] = 0;
-//     }
-
-/* Set sensor readings to zero */
-memset
-( 
-&sensor_data_byte[0],
-0,
-sizeof( sensor_data_byte )
-);
+memset ( &sensor_data_bytes[0], 0, sizeof( sensor_data_bytes ) );
+memset ( &sensor_data         , 0, sizeof( sensor_data       ) );
 
 
 /*------------------------------------------------------------------------------
@@ -110,22 +83,25 @@ switch ( subcommand )
 	case SENSOR_DUMP_CODE: 
 		{
 		/* Tell the PC how many bytes to expect */
-		HAL_UART_Transmit( &huart1,
+		HAL_UART_Transmit( &huart6,
                            &num_sensor_bytes,
                            sizeof( num_sensor_bytes ), 
                            HAL_DEFAULT_TIMEOUT );
 
 		/* Get the sensor readings */
-	    sensor_subcmd_status = sensor_dump( &sensor_data_byte[0] );	
+	    sensor_subcmd_status = sensor_dump( &sensor_data );	
+
+		/* Convert to byte array */
+		memcpy( &(sensor_data_bytes[0]), &sensor_data, sizeof( sensor_data ) );
 
 		/* Transmit sensor readings to PC */
 		if ( sensor_subcmd_status == SENSOR_OK )
 			{
 			// readings_to_bytes( &sensor_readings_bytes[0], 
             //                    &sensor_readings[0] );
-			HAL_UART_Transmit( &huart1                   , 
-                               &sensor_data_byte[0]      , 
-                               sizeof( sensor_data_byte ), 
+			HAL_UART_Transmit( &huart6                    , 
+                               &sensor_data_bytes[0]      , 
+                               sizeof( sensor_data_bytes ), 
                                HAL_SENSOR_TIMEOUT );
 			return ( sensor_subcmd_status );
             }
@@ -164,31 +140,30 @@ SENSOR_STATUS sensor_dump
 /*------------------------------------------------------------------------------
  Local variables 
 ------------------------------------------------------------------------------*/
-IMU_STATUS      accel_status;
+IMU_STATUS      accel_status;           /* IMU sensor status codes     */       
 IMU_STATUS      gyro_status;
-IMU_STATUS      mag_status;
-IMU_DATA        *pIMU_data,IMU_data;               /*Initialize IMU structure*/
-pIMU_data     = &IMU_data;                         /*Initialize pointer to IMU structure*/
-uint16_t        dummy_baro_pressure;
-uint16_t        dummy_baro_temp;
-uint32_t        start;
-start         = HAL_GetTick();
+IMU_STATUS      mag_status; 
+uint16_t        baro_pressure;          /* Baro Sensor Readouts        */
+uint16_t        baro_temp;
+
+
 /*------------------------------------------------------------------------------
  Call sensor API functions 
 ------------------------------------------------------------------------------*/
-// TODO: Pass the sensor_data_ptr -> imu_data
-accel_status         = imu_get_accel_xyz( &sensor_data_ptr->imu_data ); 
-gyro_status          = imu_get_gyro_xyz( &sensor_data_ptr->imu_data );
-mag_status           = imu_get_mag_xyz( &sensor_data_ptr->imu_data );
 
+/* Poll the IMU sensors */
+accel_status = imu_get_accel_xyz( &(sensor_data_ptr->imu_data) ); 
+gyro_status  = imu_get_gyro_xyz ( &(sensor_data_ptr->imu_data) );
+mag_status   = imu_get_mag_xyz  ( &(sensor_data_ptr->imu_data) );
+
+/* Poll the Baro sensors */
 // TODO: Implement the actual get baro values
-sensor_data_ptr->dummy_baro_pressure = dummy_baro_pressure;
-sensor_data_ptr->dummy_baro_temp     = dummy_baro_temp;
+// Temporary: Set the baro readings to 0
+baro_pressure                  = 0;
+baro_temp                      = 0;
+sensor_data_ptr->baro_pressure = baro_pressure;
+sensor_data_ptr->baro_temp     = baro_temp;
 
-sensor_data_ptr->time                = HAL_GetTick() - start;
-
-// TODO: Implement memcpy sensor_data struct to pSensor_buffer (if read through USB)
-// memcpy(pSensor_buffer, sensor_data, SENSOR_DATA_SIZE);
 
 /*------------------------------------------------------------------------------
  Set command status from sensor API returns 
@@ -206,3 +181,6 @@ if ( accel_status != IMU_TIMEOUT &&
 } /* sensor_dump */
 
 
+/*******************************************************************************
+* END OF FILE                                                                  * 
+*******************************************************************************/

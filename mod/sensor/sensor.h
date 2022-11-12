@@ -27,7 +27,7 @@
 /* General */
 #define NUM_SENSORS         ( 1   )
 #define IMU_DATA_SIZE       ( 18  )
-#define SENSOR_DATA_SIZE	( 26  )
+#define SENSOR_DATA_SIZE	( 22  )
 
 /*------------------------------------------------------------------------------
  Typdefs 
@@ -43,11 +43,9 @@ typedef enum
 
 typedef struct sensor_data
 	{
-	uint32_t time;
 	IMU_DATA imu_data;
-	// TODO: Pass the real baro values
-	uint16_t dummy_baro_pressure;
-	uint16_t dummy_baro_temp;	
+	uint16_t baro_pressure;
+	uint16_t baro_temp;	
 	} SENSOR_DATA;
 
 /*------------------------------------------------------------------------------
