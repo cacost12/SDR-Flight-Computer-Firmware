@@ -65,8 +65,11 @@ int main
 /*------------------------------------------------------------------------------
  Local Variables                                                                  
 ------------------------------------------------------------------------------*/
-uint8_t    usb_rx_data;    /* USB Incoming Data Buffer */
-USB_STATUS usb_status;     /* Status of USB HAL        */
+uint8_t    usb_rx_data;    				/* USB Incoming Data Buffer  */
+USB_STATUS usb_status;     				/* Status of USB HAL         */
+HFLASH_BUFFER flash_buffer; 			/* Flash to PC Data Buffer   */
+HFLASH_BUFFER* pflash_handle = &flash_buffer;
+FLASH_CMD_STATUS flash_run_status;		/* Status of FLASH functions */
 
 
 /*------------------------------------------------------------------------------
@@ -107,15 +110,45 @@ else
 while (1)
 	{
 	/* Poll usb port */
+	//first sends flash opcode
 	usb_status = usb_receive( 
                              &usb_rx_data, 
                              sizeof( usb_rx_data ), 
                              HAL_DEFAULT_TIMEOUT 
                             );
+
 	if ( usb_status == USB_OK ) /* Enter USB mode  */
 		{
-		// Send ACK signal
-		// Execute command
+		//gets the actual flash subcmd opcode
+		usb_status = usb_receive( 
+									&usb_rx_data, 
+									sizeof( usb_rx_data ), 
+									HAL_DEFAULT_TIMEOUT 
+								);
+
+		// switch() to	proper flash_subcmd, future implementation
+
+		// extracts whole flash chip, flash chip address from 0 to 0x1FFFF
+		uint8_t buffer;		
+		pflash_handle->pbuffer = &buffer;
+		pflash_handle->address_32 = 0;
+		while(pflash_handle->address_32 < 0x20000)
+			{
+			flash_run_status = flash_extract(pflash_handle);
+			if(flash_run_status == FLASH_OK){
+				usb_transmit(
+							pflash_handle->pbuffer,
+							sizeof(buffer)		  ,
+							HAL_DEFAULT_TIMEOUT
+							);
+			}
+			else{
+				// extract failed, stops extracting
+				Error_Handler();
+			}
+			(pflash_handle->address_32)++;
+
+			}
 		}
 
 	/* Poll switch */
