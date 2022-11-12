@@ -1,0 +1,346 @@
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\cci9GdCP.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"baro.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.text.baro_get_device_id,"ax",%progbits
+  19              		.align	1
+  20              		.global	baro_get_device_id
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	baro_get_device_id:
+  26              	.LVL0:
+  27              	.LFB144:
+  28              		.file 1 "../../../mod/baro/baro.c"
+   1:../../../mod/baro/baro.c **** /*******************************************************************************
+   2:../../../mod/baro/baro.c **** *
+   3:../../../mod/baro/baro.c **** * FILE: 
+   4:../../../mod/baro/baro.c **** * 		baro.c
+   5:../../../mod/baro/baro.c **** *
+   6:../../../mod/baro/baro.c **** * DESCRIPTION: 
+   7:../../../mod/baro/baro.c **** * 		Contains API functions for the barometric pressure sensor
+   8:../../../mod/baro/baro.c **** *
+   9:../../../mod/baro/baro.c **** *******************************************************************************/
+  10:../../../mod/baro/baro.c **** 
+  11:../../../mod/baro/baro.c **** 
+  12:../../../mod/baro/baro.c **** /*------------------------------------------------------------------------------
+  13:../../../mod/baro/baro.c ****  Standard Includes                                                                     
+  14:../../../mod/baro/baro.c **** ------------------------------------------------------------------------------*/
+  15:../../../mod/baro/baro.c **** #include <stdbool.h>
+  16:../../../mod/baro/baro.c **** 
+  17:../../../mod/baro/baro.c **** 
+  18:../../../mod/baro/baro.c **** /*------------------------------------------------------------------------------
+  19:../../../mod/baro/baro.c ****  Project Includes                                                                     
+  20:../../../mod/baro/baro.c **** ------------------------------------------------------------------------------*/
+  21:../../../mod/baro/baro.c **** #include "main.h"
+  22:../../../mod/baro/baro.c **** #include "sdr_pin_defines_A0002.h"
+  23:../../../mod/baro/baro.c **** #include "baro.h"
+  24:../../../mod/baro/baro.c **** 
+  25:../../../mod/baro/baro.c **** 
+  26:../../../mod/baro/baro.c **** /*------------------------------------------------------------------------------
+  27:../../../mod/baro/baro.c **** Global Variables  
+  28:../../../mod/baro/baro.c **** ------------------------------------------------------------------------------*/
+  29:../../../mod/baro/baro.c **** extern I2C_HandleTypeDef hi2c1; /* MCU I2C handle */
+  30:../../../mod/baro/baro.c **** 
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\cci9GdCP.s 			page 2
+
+
+  31:../../../mod/baro/baro.c **** 
+  32:../../../mod/baro/baro.c **** /*------------------------------------------------------------------------------
+  33:../../../mod/baro/baro.c ****  Procedures 
+  34:../../../mod/baro/baro.c **** ------------------------------------------------------------------------------*/
+  35:../../../mod/baro/baro.c **** 
+  36:../../../mod/baro/baro.c **** 
+  37:../../../mod/baro/baro.c **** /*******************************************************************************
+  38:../../../mod/baro/baro.c **** *                                                                              *
+  39:../../../mod/baro/baro.c **** * PROCEDURE:                                                                   * 
+  40:../../../mod/baro/baro.c **** * 		baro_get_device_id                                                     *
+  41:../../../mod/baro/baro.c **** *                                                                              *
+  42:../../../mod/baro/baro.c **** * DESCRIPTION:                                                                 * 
+  43:../../../mod/baro/baro.c **** * 		Gets the device ID of the barometric pressure sensor, primarily used   *
+  44:../../../mod/baro/baro.c **** *       to verify that the sensor can be accessed by the MCU                   *
+  45:../../../mod/baro/baro.c **** *                                                                              *
+  46:../../../mod/baro/baro.c **** *******************************************************************************/
+  47:../../../mod/baro/baro.c **** BARO_STATUS baro_get_device_id
+  48:../../../mod/baro/baro.c **** 	(
+  49:../../../mod/baro/baro.c ****    	uint8_t* baro_id_ptr /* reference to memory where id is returned */ 
+  50:../../../mod/baro/baro.c **** 	)
+  51:../../../mod/baro/baro.c **** {
+  29              		.loc 1 51 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		.loc 1 51 1 is_stmt 0 view .LVU1
+  34 0000 00B5     		push	{lr}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 4
+  37              		.cfi_offset 14, -4
+  38 0002 85B0     		sub	sp, sp, #20
+  39              	.LCFI1:
+  40              		.cfi_def_cfa_offset 24
+  52:../../../mod/baro/baro.c **** /*------------------------------------------------------------------------------
+  53:../../../mod/baro/baro.c ****  Local Variables 
+  54:../../../mod/baro/baro.c **** ------------------------------------------------------------------------------*/
+  55:../../../mod/baro/baro.c **** HAL_StatusTypeDef hal_status;
+  41              		.loc 1 55 1 is_stmt 1 view .LVU2
+  56:../../../mod/baro/baro.c **** 
+  57:../../../mod/baro/baro.c **** 
+  58:../../../mod/baro/baro.c **** /*------------------------------------------------------------------------------
+  59:../../../mod/baro/baro.c ****  API Function implementation 
+  60:../../../mod/baro/baro.c **** ------------------------------------------------------------------------------*/
+  61:../../../mod/baro/baro.c **** 
+  62:../../../mod/baro/baro.c **** /* Read baro register with I2C */
+  63:../../../mod/baro/baro.c **** hal_status = HAL_I2C_Mem_Read (
+  42              		.loc 1 63 1 view .LVU3
+  43              		.loc 1 63 14 is_stmt 0 view .LVU4
+  44 0004 0123     		movs	r3, #1
+  45 0006 0293     		str	r3, [sp, #8]
+  46 0008 0193     		str	r3, [sp, #4]
+  47 000a 0090     		str	r0, [sp]
+  48 000c 0022     		movs	r2, #0
+  49 000e EC21     		movs	r1, #236
+  50 0010 0748     		ldr	r0, .L7
+  51              	.LVL1:
+  52              		.loc 1 63 14 view .LVU5
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\cci9GdCP.s 			page 3
+
+
+  53 0012 FFF7FEFF 		bl	HAL_I2C_Mem_Read
+  54              	.LVL2:
+  64:../../../mod/baro/baro.c ****                                &hi2c1              ,
+  65:../../../mod/baro/baro.c ****                                BARO_I2C_ADDR       ,
+  66:../../../mod/baro/baro.c ****                                BARO_REG_CHIP_ID    ,
+  67:../../../mod/baro/baro.c ****                                I2C_MEMADD_SIZE_8BIT,
+  68:../../../mod/baro/baro.c **** 							   baro_id_ptr         ,
+  69:../../../mod/baro/baro.c **** 							   sizeof( uint8_t )   ,
+  70:../../../mod/baro/baro.c ****                                HAL_DEFAULT_TIMEOUT
+  71:../../../mod/baro/baro.c ****                               );
+  72:../../../mod/baro/baro.c **** 
+  73:../../../mod/baro/baro.c **** /* Check HAL Status and return data if okay */
+  74:../../../mod/baro/baro.c **** switch ( hal_status )
+  55              		.loc 1 74 1 is_stmt 1 view .LVU6
+  56 0016 0128     		cmp	r0, #1
+  57 0018 06D0     		beq	.L3
+  58 001a 0328     		cmp	r0, #3
+  59 001c 06D0     		beq	.L4
+  60 001e 00B1     		cbz	r0, .L2
+  75:../../../mod/baro/baro.c **** 	{
+  76:../../../mod/baro/baro.c **** 	case HAL_OK: 
+  77:../../../mod/baro/baro.c **** 		return BARO_OK;
+  78:../../../mod/baro/baro.c **** 		break;
+  79:../../../mod/baro/baro.c **** 
+  80:../../../mod/baro/baro.c **** 	case HAL_TIMEOUT:
+  81:../../../mod/baro/baro.c **** 		return BARO_TIMEOUT;
+  82:../../../mod/baro/baro.c **** 		break;
+  83:../../../mod/baro/baro.c **** 
+  84:../../../mod/baro/baro.c **** 	case HAL_ERROR:
+  85:../../../mod/baro/baro.c **** 		return BARO_I2C_ERROR;
+  86:../../../mod/baro/baro.c **** 		break;
+  87:../../../mod/baro/baro.c **** 
+  88:../../../mod/baro/baro.c **** 	default:
+  89:../../../mod/baro/baro.c **** 		return BARO_UNRECOGNIZED_HAL_STATUS;
+  61              		.loc 1 89 10 is_stmt 0 view .LVU7
+  62 0020 0320     		movs	r0, #3
+  63              	.LVL3:
+  64              	.L2:
+  90:../../../mod/baro/baro.c **** 		break;
+  65              		.loc 1 90 3 is_stmt 1 view .LVU8
+  91:../../../mod/baro/baro.c **** 	}
+  92:../../../mod/baro/baro.c **** 
+  93:../../../mod/baro/baro.c **** } /* baro_get_device_id */
+  66              		.loc 1 93 1 is_stmt 0 view .LVU9
+  67 0022 05B0     		add	sp, sp, #20
+  68              	.LCFI2:
+  69              		.cfi_remember_state
+  70              		.cfi_def_cfa_offset 4
+  71              		@ sp needed
+  72 0024 5DF804FB 		ldr	pc, [sp], #4
+  73              	.LVL4:
+  74              	.L3:
+  75              	.LCFI3:
+  76              		.cfi_restore_state
+  85:../../../mod/baro/baro.c **** 		break;
+  77              		.loc 1 85 10 view .LVU10
+  78 0028 0420     		movs	r0, #4
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\cci9GdCP.s 			page 4
+
+
+  79              	.LVL5:
+  85:../../../mod/baro/baro.c **** 		break;
+  80              		.loc 1 85 10 view .LVU11
+  81 002a FAE7     		b	.L2
+  82              	.LVL6:
+  83              	.L4:
+  81:../../../mod/baro/baro.c **** 		break;
+  84              		.loc 1 81 10 view .LVU12
+  85 002c 0220     		movs	r0, #2
+  86              	.LVL7:
+  81:../../../mod/baro/baro.c **** 		break;
+  87              		.loc 1 81 10 view .LVU13
+  88 002e F8E7     		b	.L2
+  89              	.L8:
+  90              		.align	2
+  91              	.L7:
+  92 0030 00000000 		.word	hi2c1
+  93              		.cfi_endproc
+  94              	.LFE144:
+  96              		.section	.text.baro_get_pressure,"ax",%progbits
+  97              		.align	1
+  98              		.global	baro_get_pressure
+  99              		.syntax unified
+ 100              		.thumb
+ 101              		.thumb_func
+ 103              	baro_get_pressure:
+ 104              	.LFB145:
+  94:../../../mod/baro/baro.c **** 
+  95:../../../mod/baro/baro.c **** 
+  96:../../../mod/baro/baro.c **** /*******************************************************************************
+  97:../../../mod/baro/baro.c **** *                                                                              *
+  98:../../../mod/baro/baro.c **** * PROCEDURE:                                                                   * 
+  99:../../../mod/baro/baro.c **** * 		baro_get_pressure                                                      *
+ 100:../../../mod/baro/baro.c **** *                                                                              *
+ 101:../../../mod/baro/baro.c **** * DESCRIPTION:                                                                 * 
+ 102:../../../mod/baro/baro.c **** * 		retrieves a pressure reading from the sensor                           *
+ 103:../../../mod/baro/baro.c **** *                                                                              *
+ 104:../../../mod/baro/baro.c **** *******************************************************************************/
+ 105:../../../mod/baro/baro.c **** BARO_STATUS baro_get_pressure
+ 106:../../../mod/baro/baro.c **** 	(
+ 107:../../../mod/baro/baro.c ****     void
+ 108:../../../mod/baro/baro.c **** 	)
+ 109:../../../mod/baro/baro.c **** {
+ 105              		.loc 1 109 1 is_stmt 1 view -0
+ 106              		.cfi_startproc
+ 107              		@ args = 0, pretend = 0, frame = 0
+ 108              		@ frame_needed = 0, uses_anonymous_args = 0
+ 109              		@ link register save eliminated.
+ 110:../../../mod/baro/baro.c **** return BARO_OK;
+ 110              		.loc 1 110 1 view .LVU15
+ 111:../../../mod/baro/baro.c **** } /* baro_get_pressure */
+ 111              		.loc 1 111 1 is_stmt 0 view .LVU16
+ 112 0000 0020     		movs	r0, #0
+ 113 0002 7047     		bx	lr
+ 114              		.cfi_endproc
+ 115              	.LFE145:
+ 117              		.section	.text.baro_get_temp,"ax",%progbits
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\cci9GdCP.s 			page 5
+
+
+ 118              		.align	1
+ 119              		.global	baro_get_temp
+ 120              		.syntax unified
+ 121              		.thumb
+ 122              		.thumb_func
+ 124              	baro_get_temp:
+ 125              	.LFB146:
+ 112:../../../mod/baro/baro.c **** 
+ 113:../../../mod/baro/baro.c **** 
+ 114:../../../mod/baro/baro.c **** /*******************************************************************************
+ 115:../../../mod/baro/baro.c **** *                                                                              *
+ 116:../../../mod/baro/baro.c **** * PROCEDURE:                                                                   * 
+ 117:../../../mod/baro/baro.c **** * 		baro_get_temp                                                          *
+ 118:../../../mod/baro/baro.c **** *                                                                              *
+ 119:../../../mod/baro/baro.c **** * DESCRIPTION:                                                                 * 
+ 120:../../../mod/baro/baro.c **** * 		retrieves a temperature reading from the sensor                        *
+ 121:../../../mod/baro/baro.c **** *                                                                              *
+ 122:../../../mod/baro/baro.c **** *******************************************************************************/
+ 123:../../../mod/baro/baro.c **** BARO_STATUS baro_get_temp
+ 124:../../../mod/baro/baro.c **** 	(
+ 125:../../../mod/baro/baro.c ****     void
+ 126:../../../mod/baro/baro.c **** 	)
+ 127:../../../mod/baro/baro.c **** {
+ 126              		.loc 1 127 1 is_stmt 1 view -0
+ 127              		.cfi_startproc
+ 128              		@ args = 0, pretend = 0, frame = 0
+ 129              		@ frame_needed = 0, uses_anonymous_args = 0
+ 130              		@ link register save eliminated.
+ 128:../../../mod/baro/baro.c **** return BARO_OK;
+ 131              		.loc 1 128 1 view .LVU18
+ 129:../../../mod/baro/baro.c **** } /* baro_get_temp */
+ 132              		.loc 1 129 1 is_stmt 0 view .LVU19
+ 133 0000 0020     		movs	r0, #0
+ 134 0002 7047     		bx	lr
+ 135              		.cfi_endproc
+ 136              	.LFE146:
+ 138              		.section	.text.baro_get_altitude,"ax",%progbits
+ 139              		.align	1
+ 140              		.global	baro_get_altitude
+ 141              		.syntax unified
+ 142              		.thumb
+ 143              		.thumb_func
+ 145              	baro_get_altitude:
+ 146              	.LFB147:
+ 130:../../../mod/baro/baro.c **** 
+ 131:../../../mod/baro/baro.c **** 
+ 132:../../../mod/baro/baro.c **** /*******************************************************************************
+ 133:../../../mod/baro/baro.c **** *                                                                              *
+ 134:../../../mod/baro/baro.c **** * PROCEDURE:                                                                   * 
+ 135:../../../mod/baro/baro.c **** * 		baro_get_altitude                                                      *
+ 136:../../../mod/baro/baro.c **** *                                                                              *
+ 137:../../../mod/baro/baro.c **** * DESCRIPTION:                                                                 * 
+ 138:../../../mod/baro/baro.c **** * 		gets the altitude of the rocket from the sensor readouts               *
+ 139:../../../mod/baro/baro.c **** *                                                                              *
+ 140:../../../mod/baro/baro.c **** *******************************************************************************/
+ 141:../../../mod/baro/baro.c **** BARO_STATUS baro_get_altitude
+ 142:../../../mod/baro/baro.c **** 	(
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\cci9GdCP.s 			page 6
+
+
+ 143:../../../mod/baro/baro.c ****     void
+ 144:../../../mod/baro/baro.c **** 	)
+ 145:../../../mod/baro/baro.c **** {
+ 147              		.loc 1 145 1 is_stmt 1 view -0
+ 148              		.cfi_startproc
+ 149              		@ args = 0, pretend = 0, frame = 0
+ 150              		@ frame_needed = 0, uses_anonymous_args = 0
+ 151              		@ link register save eliminated.
+ 146:../../../mod/baro/baro.c **** return BARO_OK;
+ 152              		.loc 1 146 1 view .LVU21
+ 147:../../../mod/baro/baro.c **** } /* baro_get_altitude */
+ 153              		.loc 1 147 1 is_stmt 0 view .LVU22
+ 154 0000 0020     		movs	r0, #0
+ 155 0002 7047     		bx	lr
+ 156              		.cfi_endproc
+ 157              	.LFE147:
+ 159              		.text
+ 160              	.Letext0:
+ 161              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 162              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 163              		.file 4 "../../../lib/Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h750xx.h"
+ 164              		.file 5 "../../../lib/Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 165              		.file 6 "../../../lib/Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h"
+ 166              		.file 7 "../../../lib/Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c.h"
+ 167              		.file 8 "../../../mod/baro/baro.h"
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\cci9GdCP.s 			page 7
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 baro.c
+C:\Users\tnguy\AppData\Local\Temp\cci9GdCP.s:19     .text.baro_get_device_id:00000000 $t
+C:\Users\tnguy\AppData\Local\Temp\cci9GdCP.s:25     .text.baro_get_device_id:00000000 baro_get_device_id
+C:\Users\tnguy\AppData\Local\Temp\cci9GdCP.s:92     .text.baro_get_device_id:00000030 $d
+C:\Users\tnguy\AppData\Local\Temp\cci9GdCP.s:97     .text.baro_get_pressure:00000000 $t
+C:\Users\tnguy\AppData\Local\Temp\cci9GdCP.s:103    .text.baro_get_pressure:00000000 baro_get_pressure
+C:\Users\tnguy\AppData\Local\Temp\cci9GdCP.s:118    .text.baro_get_temp:00000000 $t
+C:\Users\tnguy\AppData\Local\Temp\cci9GdCP.s:124    .text.baro_get_temp:00000000 baro_get_temp
+C:\Users\tnguy\AppData\Local\Temp\cci9GdCP.s:139    .text.baro_get_altitude:00000000 $t
+C:\Users\tnguy\AppData\Local\Temp\cci9GdCP.s:145    .text.baro_get_altitude:00000000 baro_get_altitude
+
+UNDEFINED SYMBOLS
+HAL_I2C_Mem_Read
+hi2c1

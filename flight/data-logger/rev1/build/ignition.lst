@@ -1,0 +1,819 @@
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"ignition.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.text.ign_main_cont,"ax",%progbits
+  19              		.align	1
+  20              		.global	ign_main_cont
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	ign_main_cont:
+  26              	.LFB147:
+  27              		.file 1 "../../../mod/ignition/ignition.c"
+   1:../../../mod/ignition/ignition.c **** /*******************************************************************************
+   2:../../../mod/ignition/ignition.c **** *
+   3:../../../mod/ignition/ignition.c **** * FILE: 
+   4:../../../mod/ignition/ignition.c **** * 		ignition.c
+   5:../../../mod/ignition/ignition.c **** *
+   6:../../../mod/ignition/ignition.c **** * DESCRIPTION: 
+   7:../../../mod/ignition/ignition.c **** * 		Contains API function to the engine controller ignition system and 
+   8:../../../mod/ignition/ignition.c **** *       contintuity readings
+   9:../../../mod/ignition/ignition.c **** *
+  10:../../../mod/ignition/ignition.c **** *******************************************************************************/
+  11:../../../mod/ignition/ignition.c **** 
+  12:../../../mod/ignition/ignition.c **** 
+  13:../../../mod/ignition/ignition.c **** /*------------------------------------------------------------------------------
+  14:../../../mod/ignition/ignition.c ****  Standard Includes                                                                     
+  15:../../../mod/ignition/ignition.c **** ------------------------------------------------------------------------------*/
+  16:../../../mod/ignition/ignition.c **** #include <stdbool.h>
+  17:../../../mod/ignition/ignition.c **** 
+  18:../../../mod/ignition/ignition.c **** 
+  19:../../../mod/ignition/ignition.c **** /*------------------------------------------------------------------------------
+  20:../../../mod/ignition/ignition.c ****  Project Includes                                                                     
+  21:../../../mod/ignition/ignition.c **** ------------------------------------------------------------------------------*/
+  22:../../../mod/ignition/ignition.c **** #include "main.h"
+  23:../../../mod/ignition/ignition.c **** #include "sdr_pin_defines_A0002.h"
+  24:../../../mod/ignition/ignition.c **** #include "ignition.h"
+  25:../../../mod/ignition/ignition.c **** 
+  26:../../../mod/ignition/ignition.c **** 
+  27:../../../mod/ignition/ignition.c **** /*------------------------------------------------------------------------------
+  28:../../../mod/ignition/ignition.c ****  Procedures 
+  29:../../../mod/ignition/ignition.c **** ------------------------------------------------------------------------------*/
+  30:../../../mod/ignition/ignition.c **** 
+  31:../../../mod/ignition/ignition.c **** #if defined TERMINAL
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s 			page 2
+
+
+  32:../../../mod/ignition/ignition.c **** /*******************************************************************************
+  33:../../../mod/ignition/ignition.c **** *                                                                              *
+  34:../../../mod/ignition/ignition.c **** * PROCEDURE:                                                                   * 
+  35:../../../mod/ignition/ignition.c **** * 		ign_cmd_execute                                                        *
+  36:../../../mod/ignition/ignition.c **** *                                                                              *
+  37:../../../mod/ignition/ignition.c **** * DESCRIPTION:                                                                 * 
+  38:../../../mod/ignition/ignition.c **** * 		Executes an ignition subcommand based on user input from the sdec      *
+  39:../../../mod/ignition/ignition.c **** *       terminal                                                               *
+  40:../../../mod/ignition/ignition.c **** *                                                                              *
+  41:../../../mod/ignition/ignition.c **** *******************************************************************************/
+  42:../../../mod/ignition/ignition.c **** IGN_STATUS ign_cmd_execute
+  43:../../../mod/ignition/ignition.c **** 	(
+  44:../../../mod/ignition/ignition.c ****     IGN_SUBCOMMAND ign_subcommand
+  45:../../../mod/ignition/ignition.c ****     )
+  46:../../../mod/ignition/ignition.c **** {
+  47:../../../mod/ignition/ignition.c **** /*------------------------------------------------------------------------------
+  48:../../../mod/ignition/ignition.c ****  Local Variables 
+  49:../../../mod/ignition/ignition.c **** ------------------------------------------------------------------------------*/
+  50:../../../mod/ignition/ignition.c **** IGN_STATUS ign_status = 0; /* Status code returned by ignite API function */
+  51:../../../mod/ignition/ignition.c **** 
+  52:../../../mod/ignition/ignition.c **** /*------------------------------------------------------------------------------
+  53:../../../mod/ignition/ignition.c ****  Call API function 
+  54:../../../mod/ignition/ignition.c **** ------------------------------------------------------------------------------*/
+  55:../../../mod/ignition/ignition.c **** switch( ign_subcommand )
+  56:../../../mod/ignition/ignition.c **** 	{
+  57:../../../mod/ignition/ignition.c ****     /* Deploy main */
+  58:../../../mod/ignition/ignition.c **** 	case IGN_MAIN_DEPLOY_CODE:
+  59:../../../mod/ignition/ignition.c **** 		{
+  60:../../../mod/ignition/ignition.c **** 		ign_status = ign_deploy_main();
+  61:../../../mod/ignition/ignition.c **** 		break;
+  62:../../../mod/ignition/ignition.c **** 		}
+  63:../../../mod/ignition/ignition.c **** 
+  64:../../../mod/ignition/ignition.c ****     /* Deploy drogue */
+  65:../../../mod/ignition/ignition.c **** 	case IGN_DROGUE_DEPLOY_CODE:
+  66:../../../mod/ignition/ignition.c **** 		{
+  67:../../../mod/ignition/ignition.c **** 		ign_status = ign_deploy_main();
+  68:../../../mod/ignition/ignition.c **** 		break;
+  69:../../../mod/ignition/ignition.c **** 		}
+  70:../../../mod/ignition/ignition.c **** 
+  71:../../../mod/ignition/ignition.c **** 	/* Return continuity information */
+  72:../../../mod/ignition/ignition.c **** 	case IGN_CONT_CODE:
+  73:../../../mod/ignition/ignition.c **** 		{
+  74:../../../mod/ignition/ignition.c **** 		ign_status = ign_get_cont_info();
+  75:../../../mod/ignition/ignition.c **** 		break;
+  76:../../../mod/ignition/ignition.c **** 		}
+  77:../../../mod/ignition/ignition.c **** 
+  78:../../../mod/ignition/ignition.c ****     /* Unrecognized subcommand code: call error handler */
+  79:../../../mod/ignition/ignition.c **** 	default:
+  80:../../../mod/ignition/ignition.c **** 		{
+  81:../../../mod/ignition/ignition.c **** 		Error_Handler();
+  82:../../../mod/ignition/ignition.c **** 		break;
+  83:../../../mod/ignition/ignition.c **** 		}
+  84:../../../mod/ignition/ignition.c ****     }
+  85:../../../mod/ignition/ignition.c **** 
+  86:../../../mod/ignition/ignition.c **** /* Return the response code */
+  87:../../../mod/ignition/ignition.c **** return ign_status;
+  88:../../../mod/ignition/ignition.c **** 
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s 			page 3
+
+
+  89:../../../mod/ignition/ignition.c **** } /* ign_cmd_execute */
+  90:../../../mod/ignition/ignition.c **** 
+  91:../../../mod/ignition/ignition.c **** #endif /* TERMINAL */
+  92:../../../mod/ignition/ignition.c **** 
+  93:../../../mod/ignition/ignition.c **** 
+  94:../../../mod/ignition/ignition.c **** /*******************************************************************************
+  95:../../../mod/ignition/ignition.c **** *                                                                              *
+  96:../../../mod/ignition/ignition.c **** * PROCEDURE:                                                                   * 
+  97:../../../mod/ignition/ignition.c **** * 		ign_deploy_main                                                        *
+  98:../../../mod/ignition/ignition.c **** *                                                                              *
+  99:../../../mod/ignition/ignition.c **** * DESCRIPTION:                                                                 * 
+ 100:../../../mod/ignition/ignition.c **** * 		Asserts the ignition signal to ignite the main parachute deployment    *
+ 101:../../../mod/ignition/ignition.c **** *       ematch. Returns a response code indicating if the ignition occured     *
+ 102:../../../mod/ignition/ignition.c **** *       succesfully                                                            *
+ 103:../../../mod/ignition/ignition.c **** *                                                                              *
+ 104:../../../mod/ignition/ignition.c **** *******************************************************************************/
+ 105:../../../mod/ignition/ignition.c **** IGN_STATUS ign_deploy_main 
+ 106:../../../mod/ignition/ignition.c ****     (
+ 107:../../../mod/ignition/ignition.c **** 	void
+ 108:../../../mod/ignition/ignition.c ****     )
+ 109:../../../mod/ignition/ignition.c **** {
+ 110:../../../mod/ignition/ignition.c **** /*------------------------------------------------------------------------------
+ 111:../../../mod/ignition/ignition.c ****  API function implementation
+ 112:../../../mod/ignition/ignition.c **** ------------------------------------------------------------------------------*/
+ 113:../../../mod/ignition/ignition.c **** 
+ 114:../../../mod/ignition/ignition.c **** /* Check continuities before deploying*/
+ 115:../../../mod/ignition/ignition.c **** if      ( !ign_switch_cont() )
+ 116:../../../mod/ignition/ignition.c **** 	{
+ 117:../../../mod/ignition/ignition.c **** 	return IGN_SWITCH_FAIL;
+ 118:../../../mod/ignition/ignition.c **** 	}
+ 119:../../../mod/ignition/ignition.c **** else if ( !ign_main_cont()   )
+ 120:../../../mod/ignition/ignition.c **** 	{
+ 121:../../../mod/ignition/ignition.c ****     return IGN_MAIN_CONT_FAIL; 
+ 122:../../../mod/ignition/ignition.c ****     }
+ 123:../../../mod/ignition/ignition.c **** else /* Continuity is good for main */
+ 124:../../../mod/ignition/ignition.c **** 	{
+ 125:../../../mod/ignition/ignition.c **** 	/* Assert ignition signal for 10 ms */
+ 126:../../../mod/ignition/ignition.c **** 	HAL_GPIO_WritePin( MAIN_GPIO_PORT, MAIN_PIN, GPIO_PIN_SET );
+ 127:../../../mod/ignition/ignition.c **** 	HAL_Delay( 10 );
+ 128:../../../mod/ignition/ignition.c **** 	HAL_GPIO_WritePin( MAIN_GPIO_PORT, MAIN_PIN, GPIO_PIN_RESET );
+ 129:../../../mod/ignition/ignition.c **** 	}
+ 130:../../../mod/ignition/ignition.c **** 
+ 131:../../../mod/ignition/ignition.c **** /* Check ematch continuity to check that ematch was lit */
+ 132:../../../mod/ignition/ignition.c **** if ( !ign_main_cont() )
+ 133:../../../mod/ignition/ignition.c **** 	{
+ 134:../../../mod/ignition/ignition.c **** 	return IGN_OK;
+ 135:../../../mod/ignition/ignition.c **** 	}
+ 136:../../../mod/ignition/ignition.c **** else /* Ignition unsuccessful */
+ 137:../../../mod/ignition/ignition.c **** 	{
+ 138:../../../mod/ignition/ignition.c **** 	return IGN_MAIN_FAIL;
+ 139:../../../mod/ignition/ignition.c **** 	}
+ 140:../../../mod/ignition/ignition.c **** 
+ 141:../../../mod/ignition/ignition.c **** } /* ign_deploy_main */
+ 142:../../../mod/ignition/ignition.c **** 
+ 143:../../../mod/ignition/ignition.c **** 
+ 144:../../../mod/ignition/ignition.c **** /*******************************************************************************
+ 145:../../../mod/ignition/ignition.c **** *                                                                              *
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s 			page 4
+
+
+ 146:../../../mod/ignition/ignition.c **** * PROCEDURE:                                                                   * 
+ 147:../../../mod/ignition/ignition.c **** * 		ign_deploy_drogue                                                      *
+ 148:../../../mod/ignition/ignition.c **** *                                                                              *
+ 149:../../../mod/ignition/ignition.c **** * DESCRIPTION:                                                                 * 
+ 150:../../../mod/ignition/ignition.c **** * 		Asserts the ignition signal to ignite the drogue parachute deployment  *
+ 151:../../../mod/ignition/ignition.c **** *       ematch. Returns a response code indicating if the ignition occured     *
+ 152:../../../mod/ignition/ignition.c **** *       succesfully                                                            *
+ 153:../../../mod/ignition/ignition.c **** *                                                                              *
+ 154:../../../mod/ignition/ignition.c **** *******************************************************************************/
+ 155:../../../mod/ignition/ignition.c **** IGN_STATUS ign_deploy_drogue 
+ 156:../../../mod/ignition/ignition.c ****     (
+ 157:../../../mod/ignition/ignition.c **** 	void
+ 158:../../../mod/ignition/ignition.c ****     )
+ 159:../../../mod/ignition/ignition.c **** {
+ 160:../../../mod/ignition/ignition.c **** /*------------------------------------------------------------------------------
+ 161:../../../mod/ignition/ignition.c ****  API function implementation
+ 162:../../../mod/ignition/ignition.c **** ------------------------------------------------------------------------------*/
+ 163:../../../mod/ignition/ignition.c **** 
+ 164:../../../mod/ignition/ignition.c **** /* Check continuities before deploying*/
+ 165:../../../mod/ignition/ignition.c **** if      ( !ign_switch_cont() )
+ 166:../../../mod/ignition/ignition.c **** 	{
+ 167:../../../mod/ignition/ignition.c **** 	return IGN_SWITCH_FAIL;
+ 168:../../../mod/ignition/ignition.c **** 	}
+ 169:../../../mod/ignition/ignition.c **** else if ( !ign_drogue_cont()   )
+ 170:../../../mod/ignition/ignition.c **** 	{
+ 171:../../../mod/ignition/ignition.c ****     return IGN_DROGUE_CONT_FAIL; 
+ 172:../../../mod/ignition/ignition.c ****     }
+ 173:../../../mod/ignition/ignition.c **** else /* Continuity is good for drogue */
+ 174:../../../mod/ignition/ignition.c **** 	{
+ 175:../../../mod/ignition/ignition.c **** 	/* Assert ignition signal for 10 ms */
+ 176:../../../mod/ignition/ignition.c **** 	HAL_GPIO_WritePin( DROGUE_GPIO_PORT, DROGUE_PIN, GPIO_PIN_SET   );
+ 177:../../../mod/ignition/ignition.c **** 	HAL_Delay( 10 );
+ 178:../../../mod/ignition/ignition.c **** 	HAL_GPIO_WritePin( DROGUE_GPIO_PORT, DROGUE_PIN, GPIO_PIN_RESET );
+ 179:../../../mod/ignition/ignition.c **** 	}
+ 180:../../../mod/ignition/ignition.c **** 
+ 181:../../../mod/ignition/ignition.c **** /* Check ematch continuity to check that ematch was lit */
+ 182:../../../mod/ignition/ignition.c **** if ( !ign_drogue_cont() )
+ 183:../../../mod/ignition/ignition.c **** 	{
+ 184:../../../mod/ignition/ignition.c **** 	return IGN_OK;
+ 185:../../../mod/ignition/ignition.c **** 	}
+ 186:../../../mod/ignition/ignition.c **** else /* Ignition unsuccessful */
+ 187:../../../mod/ignition/ignition.c **** 	{
+ 188:../../../mod/ignition/ignition.c **** 	return IGN_DROGUE_FAIL;
+ 189:../../../mod/ignition/ignition.c **** 	}
+ 190:../../../mod/ignition/ignition.c **** 
+ 191:../../../mod/ignition/ignition.c **** } /* ign_deploy_drogue */
+ 192:../../../mod/ignition/ignition.c **** 
+ 193:../../../mod/ignition/ignition.c **** 
+ 194:../../../mod/ignition/ignition.c **** /*******************************************************************************
+ 195:../../../mod/ignition/ignition.c **** *                                                                              *
+ 196:../../../mod/ignition/ignition.c **** * PROCEDURE:                                                                   * 
+ 197:../../../mod/ignition/ignition.c **** * 		ign_get_cont_info                                                      *
+ 198:../../../mod/ignition/ignition.c **** *                                                                              *
+ 199:../../../mod/ignition/ignition.c **** * DESCRIPTION:                                                                 * 
+ 200:../../../mod/ignition/ignition.c **** * 		Polls each continuity pin and sets the continuity bits in the          *
+ 201:../../../mod/ignition/ignition.c **** *       response code                                                          *   
+ 202:../../../mod/ignition/ignition.c **** *                                                                              *
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s 			page 5
+
+
+ 203:../../../mod/ignition/ignition.c **** *******************************************************************************/
+ 204:../../../mod/ignition/ignition.c **** IGN_CONT_STAT ign_get_cont_info
+ 205:../../../mod/ignition/ignition.c **** 	(
+ 206:../../../mod/ignition/ignition.c ****     void
+ 207:../../../mod/ignition/ignition.c ****     )
+ 208:../../../mod/ignition/ignition.c **** {
+ 209:../../../mod/ignition/ignition.c **** /*------------------------------------------------------------------------------
+ 210:../../../mod/ignition/ignition.c ****  Local Variables 
+ 211:../../../mod/ignition/ignition.c **** ------------------------------------------------------------------------------*/
+ 212:../../../mod/ignition/ignition.c **** IGN_CONT_STAT ign_status = 0; /* Status code to be returned */
+ 213:../../../mod/ignition/ignition.c **** 
+ 214:../../../mod/ignition/ignition.c **** 
+ 215:../../../mod/ignition/ignition.c **** /*------------------------------------------------------------------------------
+ 216:../../../mod/ignition/ignition.c ****  Call API functions 
+ 217:../../../mod/ignition/ignition.c **** ------------------------------------------------------------------------------*/
+ 218:../../../mod/ignition/ignition.c **** 
+ 219:../../../mod/ignition/ignition.c **** /* Poll the switch continuity pin */
+ 220:../../../mod/ignition/ignition.c **** if ( ign_switch_cont() )
+ 221:../../../mod/ignition/ignition.c **** 	{
+ 222:../../../mod/ignition/ignition.c ****     ign_status |= IGN_SWITCH_MASK;
+ 223:../../../mod/ignition/ignition.c ****     }
+ 224:../../../mod/ignition/ignition.c **** 
+ 225:../../../mod/ignition/ignition.c **** /* Poll the main parachute deployment continuity pin */
+ 226:../../../mod/ignition/ignition.c **** if ( ign_main_cont() )
+ 227:../../../mod/ignition/ignition.c **** 	{
+ 228:../../../mod/ignition/ignition.c ****     ign_status |= IGN_MAIN_CONT_MASK;
+ 229:../../../mod/ignition/ignition.c ****     }
+ 230:../../../mod/ignition/ignition.c **** 
+ 231:../../../mod/ignition/ignition.c **** /* Poll the drogue parachute deployment continuity pin */
+ 232:../../../mod/ignition/ignition.c **** if ( ign_drogue_cont() )
+ 233:../../../mod/ignition/ignition.c **** 	{
+ 234:../../../mod/ignition/ignition.c ****     ign_status |= IGN_DROGUE_CONT_MASK;
+ 235:../../../mod/ignition/ignition.c ****     }
+ 236:../../../mod/ignition/ignition.c **** 
+ 237:../../../mod/ignition/ignition.c **** /* Return the status code */
+ 238:../../../mod/ignition/ignition.c **** return ign_status;
+ 239:../../../mod/ignition/ignition.c **** 
+ 240:../../../mod/ignition/ignition.c **** } /* ign_get_cont_info */
+ 241:../../../mod/ignition/ignition.c **** 
+ 242:../../../mod/ignition/ignition.c **** 
+ 243:../../../mod/ignition/ignition.c **** /*******************************************************************************
+ 244:../../../mod/ignition/ignition.c **** *                                                                              *
+ 245:../../../mod/ignition/ignition.c **** * PROCEDURE:                                                                   * 
+ 246:../../../mod/ignition/ignition.c **** * 		ign_main_cont                                                          *
+ 247:../../../mod/ignition/ignition.c **** *                                                                              *
+ 248:../../../mod/ignition/ignition.c **** * DESCRIPTION:                                                                 * 
+ 249:../../../mod/ignition/ignition.c **** * 		Returns TRUE if there is continuity across the main parachute          *
+ 250:../../../mod/ignition/ignition.c **** *       deployment ematch                                                      *
+ 251:../../../mod/ignition/ignition.c **** *                                                                              *
+ 252:../../../mod/ignition/ignition.c **** *******************************************************************************/
+ 253:../../../mod/ignition/ignition.c **** bool ign_main_cont
+ 254:../../../mod/ignition/ignition.c **** 	(
+ 255:../../../mod/ignition/ignition.c **** 	void
+ 256:../../../mod/ignition/ignition.c **** 	)
+ 257:../../../mod/ignition/ignition.c **** {
+  28              		.loc 1 257 1 view -0
+  29              		.cfi_startproc
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s 			page 6
+
+
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32 0000 08B5     		push	{r3, lr}
+  33              	.LCFI0:
+  34              		.cfi_def_cfa_offset 8
+  35              		.cfi_offset 3, -8
+  36              		.cfi_offset 14, -4
+ 258:../../../mod/ignition/ignition.c **** 
+ 259:../../../mod/ignition/ignition.c **** /* Check MCU GPIO State */
+ 260:../../../mod/ignition/ignition.c **** uint8_t main_cont_pinstate = HAL_GPIO_ReadPin( MAIN_GPIO_PORT, MAIN_PIN );
+  37              		.loc 1 260 1 view .LVU1
+  38              		.loc 1 260 30 is_stmt 0 view .LVU2
+  39 0002 4021     		movs	r1, #64
+  40 0004 0348     		ldr	r0, .L5
+  41 0006 FFF7FEFF 		bl	HAL_GPIO_ReadPin
+  42              	.LVL0:
+ 261:../../../mod/ignition/ignition.c **** 
+ 262:../../../mod/ignition/ignition.c **** /* Return true if GPIO state is high*/
+ 263:../../../mod/ignition/ignition.c **** if ( main_cont_pinstate == 0 )
+  43              		.loc 1 263 1 is_stmt 1 view .LVU3
+  44              		.loc 1 263 4 is_stmt 0 view .LVU4
+  45 000a 08B9     		cbnz	r0, .L3
+ 264:../../../mod/ignition/ignition.c **** 	{
+ 265:../../../mod/ignition/ignition.c ****     return true;
+  46              		.loc 1 265 12 view .LVU5
+  47 000c 0120     		movs	r0, #1
+  48              	.LVL1:
+  49              	.L2:
+ 266:../../../mod/ignition/ignition.c **** 	}
+ 267:../../../mod/ignition/ignition.c **** else
+ 268:../../../mod/ignition/ignition.c **** 	{
+ 269:../../../mod/ignition/ignition.c ****     return false;
+ 270:../../../mod/ignition/ignition.c ****     }
+ 271:../../../mod/ignition/ignition.c **** 
+ 272:../../../mod/ignition/ignition.c **** } /* ign_main_cont */
+  50              		.loc 1 272 1 view .LVU6
+  51 000e 08BD     		pop	{r3, pc}
+  52              	.LVL2:
+  53              	.L3:
+ 269:../../../mod/ignition/ignition.c ****     }
+  54              		.loc 1 269 12 view .LVU7
+  55 0010 0020     		movs	r0, #0
+  56              	.LVL3:
+ 269:../../../mod/ignition/ignition.c ****     }
+  57              		.loc 1 269 12 view .LVU8
+  58 0012 FCE7     		b	.L2
+  59              	.L6:
+  60              		.align	2
+  61              	.L5:
+  62 0014 000C0258 		.word	1476529152
+  63              		.cfi_endproc
+  64              	.LFE147:
+  66              		.section	.text.ign_drogue_cont,"ax",%progbits
+  67              		.align	1
+  68              		.global	ign_drogue_cont
+  69              		.syntax unified
+  70              		.thumb
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s 			page 7
+
+
+  71              		.thumb_func
+  73              	ign_drogue_cont:
+  74              	.LFB148:
+ 273:../../../mod/ignition/ignition.c **** 
+ 274:../../../mod/ignition/ignition.c **** 
+ 275:../../../mod/ignition/ignition.c **** /*******************************************************************************
+ 276:../../../mod/ignition/ignition.c **** *                                                                              *
+ 277:../../../mod/ignition/ignition.c **** * PROCEDURE:                                                                   * 
+ 278:../../../mod/ignition/ignition.c **** * 		ign_drogue_cont                                                        *
+ 279:../../../mod/ignition/ignition.c **** *                                                                              *
+ 280:../../../mod/ignition/ignition.c **** * DESCRIPTION:                                                                 * 
+ 281:../../../mod/ignition/ignition.c **** * 		Returns TRUE if there is continuity across the drogue parachute        * 
+ 282:../../../mod/ignition/ignition.c **** *       deployment ematch                                                      *
+ 283:../../../mod/ignition/ignition.c **** *                                                                              *
+ 284:../../../mod/ignition/ignition.c **** *******************************************************************************/
+ 285:../../../mod/ignition/ignition.c **** bool ign_drogue_cont
+ 286:../../../mod/ignition/ignition.c **** 	(
+ 287:../../../mod/ignition/ignition.c **** 	void
+ 288:../../../mod/ignition/ignition.c **** 	)
+ 289:../../../mod/ignition/ignition.c **** {
+  75              		.loc 1 289 1 is_stmt 1 view -0
+  76              		.cfi_startproc
+  77              		@ args = 0, pretend = 0, frame = 0
+  78              		@ frame_needed = 0, uses_anonymous_args = 0
+  79 0000 08B5     		push	{r3, lr}
+  80              	.LCFI1:
+  81              		.cfi_def_cfa_offset 8
+  82              		.cfi_offset 3, -8
+  83              		.cfi_offset 14, -4
+ 290:../../../mod/ignition/ignition.c **** 
+ 291:../../../mod/ignition/ignition.c **** /* Check MCU GPIO State */
+ 292:../../../mod/ignition/ignition.c **** uint8_t drogue_cont_pinstate = HAL_GPIO_ReadPin( DROGUE_CONT_GPIO_PORT, 
+  84              		.loc 1 292 1 view .LVU10
+  85              		.loc 1 292 32 is_stmt 0 view .LVU11
+  86 0002 4FF48041 		mov	r1, #16384
+  87 0006 0448     		ldr	r0, .L11
+  88 0008 FFF7FEFF 		bl	HAL_GPIO_ReadPin
+  89              	.LVL4:
+ 293:../../../mod/ignition/ignition.c ****                                                  DROGUE_CONT_PIN );
+ 294:../../../mod/ignition/ignition.c **** 
+ 295:../../../mod/ignition/ignition.c **** /* Return true if GPIO state is high*/
+ 296:../../../mod/ignition/ignition.c **** if ( drogue_cont_pinstate == 0 )
+  90              		.loc 1 296 1 is_stmt 1 view .LVU12
+  91              		.loc 1 296 4 is_stmt 0 view .LVU13
+  92 000c 08B9     		cbnz	r0, .L9
+ 297:../../../mod/ignition/ignition.c **** 	{
+ 298:../../../mod/ignition/ignition.c ****     return true;
+  93              		.loc 1 298 12 view .LVU14
+  94 000e 0120     		movs	r0, #1
+  95              	.LVL5:
+  96              	.L8:
+ 299:../../../mod/ignition/ignition.c **** 	}
+ 300:../../../mod/ignition/ignition.c **** else
+ 301:../../../mod/ignition/ignition.c **** 	{
+ 302:../../../mod/ignition/ignition.c ****     return false;
+ 303:../../../mod/ignition/ignition.c ****     }
+ 304:../../../mod/ignition/ignition.c **** 
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s 			page 8
+
+
+ 305:../../../mod/ignition/ignition.c **** } /* drogue_cont */
+  97              		.loc 1 305 1 view .LVU15
+  98 0010 08BD     		pop	{r3, pc}
+  99              	.LVL6:
+ 100              	.L9:
+ 302:../../../mod/ignition/ignition.c ****     }
+ 101              		.loc 1 302 12 view .LVU16
+ 102 0012 0020     		movs	r0, #0
+ 103              	.LVL7:
+ 302:../../../mod/ignition/ignition.c ****     }
+ 104              		.loc 1 302 12 view .LVU17
+ 105 0014 FCE7     		b	.L8
+ 106              	.L12:
+ 107 0016 00BF     		.align	2
+ 108              	.L11:
+ 109 0018 00080258 		.word	1476528128
+ 110              		.cfi_endproc
+ 111              	.LFE148:
+ 113              		.section	.text.ign_switch_cont,"ax",%progbits
+ 114              		.align	1
+ 115              		.global	ign_switch_cont
+ 116              		.syntax unified
+ 117              		.thumb
+ 118              		.thumb_func
+ 120              	ign_switch_cont:
+ 121              	.LFB149:
+ 306:../../../mod/ignition/ignition.c **** 
+ 307:../../../mod/ignition/ignition.c **** 
+ 308:../../../mod/ignition/ignition.c **** /*******************************************************************************
+ 309:../../../mod/ignition/ignition.c **** *                                                                              *
+ 310:../../../mod/ignition/ignition.c **** * PROCEDURE:                                                                   * 
+ 311:../../../mod/ignition/ignition.c **** * 		ign_switch_cont                                                        *
+ 312:../../../mod/ignition/ignition.c **** *                                                                              *
+ 313:../../../mod/ignition/ignition.c **** * DESCRIPTION:                                                                 * 
+ 314:../../../mod/ignition/ignition.c **** * 		Returns TRUE if there is continuity across the switch screw terminals  * 
+ 315:../../../mod/ignition/ignition.c **** *                                                                              *
+ 316:../../../mod/ignition/ignition.c **** *******************************************************************************/
+ 317:../../../mod/ignition/ignition.c **** bool ign_switch_cont
+ 318:../../../mod/ignition/ignition.c **** 	(
+ 319:../../../mod/ignition/ignition.c **** 	void
+ 320:../../../mod/ignition/ignition.c **** 	)
+ 321:../../../mod/ignition/ignition.c **** {
+ 122              		.loc 1 321 1 is_stmt 1 view -0
+ 123              		.cfi_startproc
+ 124              		@ args = 0, pretend = 0, frame = 0
+ 125              		@ frame_needed = 0, uses_anonymous_args = 0
+ 126 0000 08B5     		push	{r3, lr}
+ 127              	.LCFI2:
+ 128              		.cfi_def_cfa_offset 8
+ 129              		.cfi_offset 3, -8
+ 130              		.cfi_offset 14, -4
+ 322:../../../mod/ignition/ignition.c **** /* Check MCU GPIO State */
+ 323:../../../mod/ignition/ignition.c **** uint8_t switch_cont_pinstate = HAL_GPIO_ReadPin(SWITCH_GPIO_PORT, SWITCH_PIN);
+ 131              		.loc 1 323 1 view .LVU19
+ 132              		.loc 1 323 32 is_stmt 0 view .LVU20
+ 133 0002 8021     		movs	r1, #128
+ 134 0004 0248     		ldr	r0, .L17
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s 			page 9
+
+
+ 135 0006 FFF7FEFF 		bl	HAL_GPIO_ReadPin
+ 136              	.LVL8:
+ 324:../../../mod/ignition/ignition.c **** 
+ 325:../../../mod/ignition/ignition.c **** /* Return true if GPIO state is low */
+ 326:../../../mod/ignition/ignition.c **** if ( switch_cont_pinstate == 0 )
+ 137              		.loc 1 326 1 is_stmt 1 view .LVU21
+ 138              		.loc 1 326 4 is_stmt 0 view .LVU22
+ 139 000a 00B1     		cbz	r0, .L14
+ 327:../../../mod/ignition/ignition.c **** 	{
+ 328:../../../mod/ignition/ignition.c ****     return false;
+ 329:../../../mod/ignition/ignition.c **** 	}
+ 330:../../../mod/ignition/ignition.c **** else
+ 331:../../../mod/ignition/ignition.c **** 	{
+ 332:../../../mod/ignition/ignition.c ****     return true;
+ 140              		.loc 1 332 12 view .LVU23
+ 141 000c 0120     		movs	r0, #1
+ 142              	.LVL9:
+ 143              	.L14:
+ 333:../../../mod/ignition/ignition.c ****     }
+ 334:../../../mod/ignition/ignition.c **** 
+ 335:../../../mod/ignition/ignition.c **** } /* switch_cont */
+ 144              		.loc 1 335 1 view .LVU24
+ 145 000e 08BD     		pop	{r3, pc}
+ 146              	.L18:
+ 147              		.align	2
+ 148              	.L17:
+ 149 0010 000C0258 		.word	1476529152
+ 150              		.cfi_endproc
+ 151              	.LFE149:
+ 153              		.section	.text.ign_deploy_main,"ax",%progbits
+ 154              		.align	1
+ 155              		.global	ign_deploy_main
+ 156              		.syntax unified
+ 157              		.thumb
+ 158              		.thumb_func
+ 160              	ign_deploy_main:
+ 161              	.LFB144:
+ 109:../../../mod/ignition/ignition.c **** /*------------------------------------------------------------------------------
+ 162              		.loc 1 109 1 is_stmt 1 view -0
+ 163              		.cfi_startproc
+ 164              		@ args = 0, pretend = 0, frame = 0
+ 165              		@ frame_needed = 0, uses_anonymous_args = 0
+ 166 0000 10B5     		push	{r4, lr}
+ 167              	.LCFI3:
+ 168              		.cfi_def_cfa_offset 8
+ 169              		.cfi_offset 4, -8
+ 170              		.cfi_offset 14, -4
+ 115:../../../mod/ignition/ignition.c **** 	{
+ 171              		.loc 1 115 1 view .LVU26
+ 115:../../../mod/ignition/ignition.c **** 	{
+ 172              		.loc 1 115 12 is_stmt 0 view .LVU27
+ 173 0002 FFF7FEFF 		bl	ign_switch_cont
+ 174              	.LVL10:
+ 115:../../../mod/ignition/ignition.c **** 	{
+ 175              		.loc 1 115 9 view .LVU28
+ 176 0006 A8B1     		cbz	r0, .L21
+ 119:../../../mod/ignition/ignition.c **** 	{
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s 			page 10
+
+
+ 177              		.loc 1 119 6 is_stmt 1 view .LVU29
+ 119:../../../mod/ignition/ignition.c **** 	{
+ 178              		.loc 1 119 12 is_stmt 0 view .LVU30
+ 179 0008 FFF7FEFF 		bl	ign_main_cont
+ 180              	.LVL11:
+ 119:../../../mod/ignition/ignition.c **** 	{
+ 181              		.loc 1 119 9 view .LVU31
+ 182 000c A0B1     		cbz	r0, .L22
+ 126:../../../mod/ignition/ignition.c **** 	HAL_Delay( 10 );
+ 183              		.loc 1 126 2 is_stmt 1 view .LVU32
+ 184 000e 0B4C     		ldr	r4, .L25
+ 185 0010 0122     		movs	r2, #1
+ 186 0012 4021     		movs	r1, #64
+ 187 0014 2046     		mov	r0, r4
+ 188 0016 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 189              	.LVL12:
+ 127:../../../mod/ignition/ignition.c **** 	HAL_GPIO_WritePin( MAIN_GPIO_PORT, MAIN_PIN, GPIO_PIN_RESET );
+ 190              		.loc 1 127 2 view .LVU33
+ 191 001a 0A20     		movs	r0, #10
+ 192 001c FFF7FEFF 		bl	HAL_Delay
+ 193              	.LVL13:
+ 128:../../../mod/ignition/ignition.c **** 	}
+ 194              		.loc 1 128 2 view .LVU34
+ 195 0020 0022     		movs	r2, #0
+ 196 0022 4021     		movs	r1, #64
+ 197 0024 2046     		mov	r0, r4
+ 198 0026 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 199              	.LVL14:
+ 132:../../../mod/ignition/ignition.c **** 	{
+ 200              		.loc 1 132 1 view .LVU35
+ 132:../../../mod/ignition/ignition.c **** 	{
+ 201              		.loc 1 132 7 is_stmt 0 view .LVU36
+ 202 002a FFF7FEFF 		bl	ign_main_cont
+ 203              	.LVL15:
+ 132:../../../mod/ignition/ignition.c **** 	{
+ 204              		.loc 1 132 4 view .LVU37
+ 205 002e 10B1     		cbz	r0, .L20
+ 138:../../../mod/ignition/ignition.c **** 	}
+ 206              		.loc 1 138 9 view .LVU38
+ 207 0030 0320     		movs	r0, #3
+ 208 0032 00E0     		b	.L20
+ 209              	.L21:
+ 117:../../../mod/ignition/ignition.c **** 	}
+ 210              		.loc 1 117 9 view .LVU39
+ 211 0034 0220     		movs	r0, #2
+ 212              	.L20:
+ 141:../../../mod/ignition/ignition.c **** 
+ 213              		.loc 1 141 1 view .LVU40
+ 214 0036 10BD     		pop	{r4, pc}
+ 215              	.L22:
+ 121:../../../mod/ignition/ignition.c ****     }
+ 216              		.loc 1 121 12 view .LVU41
+ 217 0038 0520     		movs	r0, #5
+ 218 003a FCE7     		b	.L20
+ 219              	.L26:
+ 220              		.align	2
+ 221              	.L25:
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s 			page 11
+
+
+ 222 003c 000C0258 		.word	1476529152
+ 223              		.cfi_endproc
+ 224              	.LFE144:
+ 226              		.section	.text.ign_deploy_drogue,"ax",%progbits
+ 227              		.align	1
+ 228              		.global	ign_deploy_drogue
+ 229              		.syntax unified
+ 230              		.thumb
+ 231              		.thumb_func
+ 233              	ign_deploy_drogue:
+ 234              	.LFB145:
+ 159:../../../mod/ignition/ignition.c **** /*------------------------------------------------------------------------------
+ 235              		.loc 1 159 1 is_stmt 1 view -0
+ 236              		.cfi_startproc
+ 237              		@ args = 0, pretend = 0, frame = 0
+ 238              		@ frame_needed = 0, uses_anonymous_args = 0
+ 239 0000 10B5     		push	{r4, lr}
+ 240              	.LCFI4:
+ 241              		.cfi_def_cfa_offset 8
+ 242              		.cfi_offset 4, -8
+ 243              		.cfi_offset 14, -4
+ 165:../../../mod/ignition/ignition.c **** 	{
+ 244              		.loc 1 165 1 view .LVU43
+ 165:../../../mod/ignition/ignition.c **** 	{
+ 245              		.loc 1 165 12 is_stmt 0 view .LVU44
+ 246 0002 FFF7FEFF 		bl	ign_switch_cont
+ 247              	.LVL16:
+ 165:../../../mod/ignition/ignition.c **** 	{
+ 248              		.loc 1 165 9 view .LVU45
+ 249 0006 B8B1     		cbz	r0, .L29
+ 169:../../../mod/ignition/ignition.c **** 	{
+ 250              		.loc 1 169 6 is_stmt 1 view .LVU46
+ 169:../../../mod/ignition/ignition.c **** 	{
+ 251              		.loc 1 169 12 is_stmt 0 view .LVU47
+ 252 0008 FFF7FEFF 		bl	ign_drogue_cont
+ 253              	.LVL17:
+ 169:../../../mod/ignition/ignition.c **** 	{
+ 254              		.loc 1 169 9 view .LVU48
+ 255 000c B0B1     		cbz	r0, .L30
+ 176:../../../mod/ignition/ignition.c **** 	HAL_Delay( 10 );
+ 256              		.loc 1 176 2 is_stmt 1 view .LVU49
+ 257 000e 0C4C     		ldr	r4, .L33
+ 258 0010 0122     		movs	r2, #1
+ 259 0012 4FF40051 		mov	r1, #8192
+ 260 0016 2046     		mov	r0, r4
+ 261 0018 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 262              	.LVL18:
+ 177:../../../mod/ignition/ignition.c **** 	HAL_GPIO_WritePin( DROGUE_GPIO_PORT, DROGUE_PIN, GPIO_PIN_RESET );
+ 263              		.loc 1 177 2 view .LVU50
+ 264 001c 0A20     		movs	r0, #10
+ 265 001e FFF7FEFF 		bl	HAL_Delay
+ 266              	.LVL19:
+ 178:../../../mod/ignition/ignition.c **** 	}
+ 267              		.loc 1 178 2 view .LVU51
+ 268 0022 0022     		movs	r2, #0
+ 269 0024 4FF40051 		mov	r1, #8192
+ 270 0028 2046     		mov	r0, r4
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s 			page 12
+
+
+ 271 002a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 272              	.LVL20:
+ 182:../../../mod/ignition/ignition.c **** 	{
+ 273              		.loc 1 182 1 view .LVU52
+ 182:../../../mod/ignition/ignition.c **** 	{
+ 274              		.loc 1 182 7 is_stmt 0 view .LVU53
+ 275 002e FFF7FEFF 		bl	ign_drogue_cont
+ 276              	.LVL21:
+ 182:../../../mod/ignition/ignition.c **** 	{
+ 277              		.loc 1 182 4 view .LVU54
+ 278 0032 10B1     		cbz	r0, .L28
+ 188:../../../mod/ignition/ignition.c **** 	}
+ 279              		.loc 1 188 9 view .LVU55
+ 280 0034 0420     		movs	r0, #4
+ 281 0036 00E0     		b	.L28
+ 282              	.L29:
+ 167:../../../mod/ignition/ignition.c **** 	}
+ 283              		.loc 1 167 9 view .LVU56
+ 284 0038 0220     		movs	r0, #2
+ 285              	.L28:
+ 191:../../../mod/ignition/ignition.c **** 
+ 286              		.loc 1 191 1 view .LVU57
+ 287 003a 10BD     		pop	{r4, pc}
+ 288              	.L30:
+ 171:../../../mod/ignition/ignition.c ****     }
+ 289              		.loc 1 171 12 view .LVU58
+ 290 003c 0620     		movs	r0, #6
+ 291 003e FCE7     		b	.L28
+ 292              	.L34:
+ 293              		.align	2
+ 294              	.L33:
+ 295 0040 00080258 		.word	1476528128
+ 296              		.cfi_endproc
+ 297              	.LFE145:
+ 299              		.section	.text.ign_get_cont_info,"ax",%progbits
+ 300              		.align	1
+ 301              		.global	ign_get_cont_info
+ 302              		.syntax unified
+ 303              		.thumb
+ 304              		.thumb_func
+ 306              	ign_get_cont_info:
+ 307              	.LFB146:
+ 208:../../../mod/ignition/ignition.c **** /*------------------------------------------------------------------------------
+ 308              		.loc 1 208 1 is_stmt 1 view -0
+ 309              		.cfi_startproc
+ 310              		@ args = 0, pretend = 0, frame = 0
+ 311              		@ frame_needed = 0, uses_anonymous_args = 0
+ 312 0000 10B5     		push	{r4, lr}
+ 313              	.LCFI5:
+ 314              		.cfi_def_cfa_offset 8
+ 315              		.cfi_offset 4, -8
+ 316              		.cfi_offset 14, -4
+ 212:../../../mod/ignition/ignition.c **** 
+ 317              		.loc 1 212 1 view .LVU60
+ 318              	.LVL22:
+ 220:../../../mod/ignition/ignition.c **** 	{
+ 319              		.loc 1 220 1 view .LVU61
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s 			page 13
+
+
+ 220:../../../mod/ignition/ignition.c **** 	{
+ 320              		.loc 1 220 6 is_stmt 0 view .LVU62
+ 321 0002 FFF7FEFF 		bl	ign_switch_cont
+ 322              	.LVL23:
+ 220:../../../mod/ignition/ignition.c **** 	{
+ 323              		.loc 1 220 4 view .LVU63
+ 324 0006 60B9     		cbnz	r0, .L39
+ 212:../../../mod/ignition/ignition.c **** 
+ 325              		.loc 1 212 15 view .LVU64
+ 326 0008 0024     		movs	r4, #0
+ 327              	.L36:
+ 328              	.LVL24:
+ 226:../../../mod/ignition/ignition.c **** 	{
+ 329              		.loc 1 226 1 is_stmt 1 view .LVU65
+ 226:../../../mod/ignition/ignition.c **** 	{
+ 330              		.loc 1 226 6 is_stmt 0 view .LVU66
+ 331 000a FFF7FEFF 		bl	ign_main_cont
+ 332              	.LVL25:
+ 226:../../../mod/ignition/ignition.c **** 	{
+ 333              		.loc 1 226 4 view .LVU67
+ 334 000e 08B1     		cbz	r0, .L37
+ 228:../../../mod/ignition/ignition.c ****     }
+ 335              		.loc 1 228 5 is_stmt 1 view .LVU68
+ 228:../../../mod/ignition/ignition.c ****     }
+ 336              		.loc 1 228 16 is_stmt 0 view .LVU69
+ 337 0010 44F00204 		orr	r4, r4, #2
+ 338              	.LVL26:
+ 339              	.L37:
+ 232:../../../mod/ignition/ignition.c **** 	{
+ 340              		.loc 1 232 1 is_stmt 1 view .LVU70
+ 232:../../../mod/ignition/ignition.c **** 	{
+ 341              		.loc 1 232 6 is_stmt 0 view .LVU71
+ 342 0014 FFF7FEFF 		bl	ign_drogue_cont
+ 343              	.LVL27:
+ 232:../../../mod/ignition/ignition.c **** 	{
+ 344              		.loc 1 232 4 view .LVU72
+ 345 0018 08B1     		cbz	r0, .L38
+ 234:../../../mod/ignition/ignition.c ****     }
+ 346              		.loc 1 234 5 is_stmt 1 view .LVU73
+ 234:../../../mod/ignition/ignition.c ****     }
+ 347              		.loc 1 234 16 is_stmt 0 view .LVU74
+ 348 001a 44F00404 		orr	r4, r4, #4
+ 349              	.LVL28:
+ 350              	.L38:
+ 238:../../../mod/ignition/ignition.c **** 
+ 351              		.loc 1 238 1 is_stmt 1 view .LVU75
+ 240:../../../mod/ignition/ignition.c **** 
+ 352              		.loc 1 240 1 is_stmt 0 view .LVU76
+ 353 001e 2046     		mov	r0, r4
+ 354 0020 10BD     		pop	{r4, pc}
+ 355              	.LVL29:
+ 356              	.L39:
+ 222:../../../mod/ignition/ignition.c ****     }
+ 357              		.loc 1 222 16 view .LVU77
+ 358 0022 0124     		movs	r4, #1
+ 359 0024 F1E7     		b	.L36
+ 360              		.cfi_endproc
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s 			page 14
+
+
+ 361              	.LFE146:
+ 363              		.text
+ 364              	.Letext0:
+ 365              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 366              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 367              		.file 4 "../../../lib/Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h750xx.h"
+ 368              		.file 5 "../../../mod/ignition/ignition.h"
+ 369              		.file 6 "../../../lib/Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 370              		.file 7 "../../../lib/Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s 			page 15
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 ignition.c
+C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s:19     .text.ign_main_cont:00000000 $t
+C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s:25     .text.ign_main_cont:00000000 ign_main_cont
+C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s:62     .text.ign_main_cont:00000014 $d
+C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s:67     .text.ign_drogue_cont:00000000 $t
+C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s:73     .text.ign_drogue_cont:00000000 ign_drogue_cont
+C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s:109    .text.ign_drogue_cont:00000018 $d
+C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s:114    .text.ign_switch_cont:00000000 $t
+C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s:120    .text.ign_switch_cont:00000000 ign_switch_cont
+C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s:149    .text.ign_switch_cont:00000010 $d
+C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s:154    .text.ign_deploy_main:00000000 $t
+C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s:160    .text.ign_deploy_main:00000000 ign_deploy_main
+C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s:222    .text.ign_deploy_main:0000003c $d
+C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s:227    .text.ign_deploy_drogue:00000000 $t
+C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s:233    .text.ign_deploy_drogue:00000000 ign_deploy_drogue
+C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s:295    .text.ign_deploy_drogue:00000040 $d
+C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s:300    .text.ign_get_cont_info:00000000 $t
+C:\Users\tnguy\AppData\Local\Temp\ccUQLjdJ.s:306    .text.ign_get_cont_info:00000000 ign_get_cont_info
+
+UNDEFINED SYMBOLS
+HAL_GPIO_ReadPin
+HAL_GPIO_WritePin
+HAL_Delay

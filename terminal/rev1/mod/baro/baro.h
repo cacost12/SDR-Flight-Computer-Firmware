@@ -40,11 +40,36 @@ typedef enum BARO_STATUS
 
 
 /* Barometric Pressure Sensor register addresses */
-#define BARO_REG_CHIP_ID	( 0x00      )
+#define BARO_REG_CHIP_ID		( 0x00      )
+#define BARO_PRESSURE_DATA  	( 0x04		)  
+#define BARO_TEMPERATURE_DATA	( 0x05		) 
+
 
 /*------------------------------------------------------------------------------
  Function Prototypes 
 ------------------------------------------------------------------------------*/
+
+/* read one register for BARO */
+BARO_STATUS BARO_Read_Register
+    (
+    uint8_t reg_addr, 
+    uint8_t *pData
+    );
+
+/* read multiple registers for BARO */
+BARO_STATUS BARO_Read_Registers
+    (
+    uint8_t reg_addr, 
+    uint8_t *pData, 
+    uint8_t num_registers
+    );
+
+/* write a register to BARO */
+BARO_STATUS BARO_Write_Register
+    (
+    uint8_t reg_addr, 
+    uint8_t *pData
+    );
 
 /* verifies sensor can be accessed */
 BARO_STATUS baro_get_device_id
@@ -56,13 +81,13 @@ BARO_STATUS baro_get_device_id
 /* gets pressure data from sensor */
 BARO_STATUS baro_get_pressure
 	(
-    void
+    uint32_t baro_pressure_data
 	);
 
 /* gets temp data from sensor */
 BARO_STATUS baro_get_temp
 	(
-    void
+    uint32_t baro_temp_data
 	);
 
 /* converts pressure and temp data into altitude --> do research on formula */

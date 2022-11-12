@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "baro.h": "c",
+        "flash.h": "c",
+        "usb.h": "c",
+        "imu.h": "c",
+        "sensor.h": "c"
+    }
+}

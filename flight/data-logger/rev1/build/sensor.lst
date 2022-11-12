@@ -1,0 +1,493 @@
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\cc7S9Ugg.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"sensor.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.text.sensor_dump,"ax",%progbits
+  19              		.align	1
+  20              		.global	sensor_dump
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	sensor_dump:
+  26              	.LVL0:
+  27              	.LFB145:
+  28              		.file 1 "../../../mod/sensor/sensor.c"
+   1:../../../mod/sensor/sensor.c **** /*******************************************************************************
+   2:../../../mod/sensor/sensor.c **** *
+   3:../../../mod/sensor/sensor.c **** * FILE: 
+   4:../../../mod/sensor/sensor.c **** * 		sensor.c
+   5:../../../mod/sensor/sensor.c **** *
+   6:../../../mod/sensor/sensor.c **** * DESCRIPTION: 
+   7:../../../mod/sensor/sensor.c **** * 		Contains functions to interface between sdec terminal commands and SDR
+   8:../../../mod/sensor/sensor.c **** *       sensor APIs
+   9:../../../mod/sensor/sensor.c **** *
+  10:../../../mod/sensor/sensor.c **** *******************************************************************************/
+  11:../../../mod/sensor/sensor.c **** 
+  12:../../../mod/sensor/sensor.c **** /*------------------------------------------------------------------------------
+  13:../../../mod/sensor/sensor.c ****  Standard Includes                                                                     
+  14:../../../mod/sensor/sensor.c **** ------------------------------------------------------------------------------*/
+  15:../../../mod/sensor/sensor.c **** #include <string.h>
+  16:../../../mod/sensor/sensor.c **** 
+  17:../../../mod/sensor/sensor.c **** 
+  18:../../../mod/sensor/sensor.c **** /*------------------------------------------------------------------------------
+  19:../../../mod/sensor/sensor.c ****  Project Includes                                                                     
+  20:../../../mod/sensor/sensor.c **** ------------------------------------------------------------------------------*/
+  21:../../../mod/sensor/sensor.c **** #include "main.h"
+  22:../../../mod/sensor/sensor.c **** #include "imu.h"
+  23:../../../mod/sensor/sensor.c **** #include "sensor.h"
+  24:../../../mod/sensor/sensor.c **** 
+  25:../../../mod/sensor/sensor.c **** /*------------------------------------------------------------------------------
+  26:../../../mod/sensor/sensor.c ****  Global Variables 
+  27:../../../mod/sensor/sensor.c **** ------------------------------------------------------------------------------*/
+  28:../../../mod/sensor/sensor.c **** extern UART_HandleTypeDef huart1; /* USB UART handler struct        */
+  29:../../../mod/sensor/sensor.c **** 
+  30:../../../mod/sensor/sensor.c **** 
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\cc7S9Ugg.s 			page 2
+
+
+  31:../../../mod/sensor/sensor.c **** /*------------------------------------------------------------------------------
+  32:../../../mod/sensor/sensor.c ****  Public procedures 
+  33:../../../mod/sensor/sensor.c **** ------------------------------------------------------------------------------*/
+  34:../../../mod/sensor/sensor.c **** 
+  35:../../../mod/sensor/sensor.c **** /*******************************************************************************
+  36:../../../mod/sensor/sensor.c **** *                                                                              *
+  37:../../../mod/sensor/sensor.c **** * PROCEDURE:                                                                   * 
+  38:../../../mod/sensor/sensor.c **** * 		sensor_cmd_execute                                                     *
+  39:../../../mod/sensor/sensor.c **** *                                                                              *
+  40:../../../mod/sensor/sensor.c **** * DESCRIPTION:                                                                 * 
+  41:../../../mod/sensor/sensor.c **** *       Executes a sensor subcommand                                           *
+  42:../../../mod/sensor/sensor.c **** *                                                                              *
+  43:../../../mod/sensor/sensor.c **** *******************************************************************************/
+  44:../../../mod/sensor/sensor.c **** SENSOR_STATUS sensor_cmd_execute 
+  45:../../../mod/sensor/sensor.c **** 	(
+  46:../../../mod/sensor/sensor.c ****     uint8_t subcommand 
+  47:../../../mod/sensor/sensor.c ****     )
+  48:../../../mod/sensor/sensor.c **** {
+  49:../../../mod/sensor/sensor.c **** 
+  50:../../../mod/sensor/sensor.c **** /*------------------------------------------------------------------------------
+  51:../../../mod/sensor/sensor.c ****  Local Variables  
+  52:../../../mod/sensor/sensor.c **** ------------------------------------------------------------------------------*/
+  53:../../../mod/sensor/sensor.c **** SENSOR_STATUS sensor_subcmd_status;           /* Status indicating if 
+  54:../../../mod/sensor/sensor.c ****                                                  subcommand function returned 
+  55:../../../mod/sensor/sensor.c ****                                                  properly                     */
+  56:../../../mod/sensor/sensor.c **** // uint32_t      sensor_readings[ NUM_SENSORS ]; /* Readings obtained from each 
+  57:../../../mod/sensor/sensor.c **** //                                                  sensor                       */
+  58:../../../mod/sensor/sensor.c **** // uint8_t       sensor_readings_bytes[ 4*NUM_SENSORS ];
+  59:../../../mod/sensor/sensor.c **** // const uint8_t num_sensor_bytes = 4*NUM_SENSORS; /* Number of bytes to be transmitted back to PC 
+  60:../../../mod/sensor/sensor.c **** 
+  61:../../../mod/sensor/sensor.c **** // IMU data size should be in header
+  62:../../../mod/sensor/sensor.c **** // imu data, imu data size, imu data byte list, memcpy the addr of firts imu data byte and imu data
+  63:../../../mod/sensor/sensor.c **** 
+  64:../../../mod/sensor/sensor.c **** // uint8_t      sensor_data_byte[ IMU_DATA_SIZE ];    /*Initialize sensor data byte array
+  65:../../../mod/sensor/sensor.c **** //                                                      with size of all sensor data*/
+  66:../../../mod/sensor/sensor.c **** // const uint8_t num_sensor_bytes = IMU_DATA_SIZE;
+  67:../../../mod/sensor/sensor.c **** 
+  68:../../../mod/sensor/sensor.c **** // TODO: Implement sensor_data_byte with a size of sensor data
+  69:../../../mod/sensor/sensor.c **** uint8_t      sensor_data_byte[ SENSOR_DATA_SIZE ]; /*Initialize sensor data byte array
+  70:../../../mod/sensor/sensor.c ****                                                      with size of all sensor data*/
+  71:../../../mod/sensor/sensor.c **** const uint8_t num_sensor_bytes = SENSOR_DATA_SIZE;
+  72:../../../mod/sensor/sensor.c **** 
+  73:../../../mod/sensor/sensor.c **** /*------------------------------------------------------------------------------
+  74:../../../mod/sensor/sensor.c ****  Initializations  
+  75:../../../mod/sensor/sensor.c **** ------------------------------------------------------------------------------*/
+  76:../../../mod/sensor/sensor.c **** 
+  77:../../../mod/sensor/sensor.c **** // /* Set sensor readings to zero */
+  78:../../../mod/sensor/sensor.c **** // for ( uint8_t i = 0; i < NUM_SENSORS; ++i )
+  79:../../../mod/sensor/sensor.c **** // 	{
+  80:../../../mod/sensor/sensor.c **** // 	sensor_readings[i] = 0;
+  81:../../../mod/sensor/sensor.c **** //     }
+  82:../../../mod/sensor/sensor.c **** // for ( uint8_t i = 0; i < num_sensor_bytes; ++i )
+  83:../../../mod/sensor/sensor.c **** // 	{
+  84:../../../mod/sensor/sensor.c **** //     sensor_readings_bytes[i] = 0;
+  85:../../../mod/sensor/sensor.c **** //     }
+  86:../../../mod/sensor/sensor.c **** 
+  87:../../../mod/sensor/sensor.c **** /* Set sensor readings to zero */
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\cc7S9Ugg.s 			page 3
+
+
+  88:../../../mod/sensor/sensor.c **** memset
+  89:../../../mod/sensor/sensor.c **** ( 
+  90:../../../mod/sensor/sensor.c **** &sensor_data_byte[0],
+  91:../../../mod/sensor/sensor.c **** 0,
+  92:../../../mod/sensor/sensor.c **** sizeof( sensor_data_byte )
+  93:../../../mod/sensor/sensor.c **** );
+  94:../../../mod/sensor/sensor.c **** 
+  95:../../../mod/sensor/sensor.c **** 
+  96:../../../mod/sensor/sensor.c **** /*------------------------------------------------------------------------------
+  97:../../../mod/sensor/sensor.c ****  Execute Sensor Subcommand 
+  98:../../../mod/sensor/sensor.c **** ------------------------------------------------------------------------------*/
+  99:../../../mod/sensor/sensor.c **** switch ( subcommand )
+ 100:../../../mod/sensor/sensor.c **** 	{
+ 101:../../../mod/sensor/sensor.c **** 
+ 102:../../../mod/sensor/sensor.c **** 	/* Poll Sensors continuously */
+ 103:../../../mod/sensor/sensor.c ****     case SENSOR_POLL_CODE:
+ 104:../../../mod/sensor/sensor.c **** 		{
+ 105:../../../mod/sensor/sensor.c **** 		// TODO: Implement sensor poll function 
+ 106:../../../mod/sensor/sensor.c **** 		return ( SENSOR_UNSUPPORTED_OP );
+ 107:../../../mod/sensor/sensor.c ****         } /* SENSOR_POLL_CODE */ 
+ 108:../../../mod/sensor/sensor.c **** 
+ 109:../../../mod/sensor/sensor.c **** 	/* Poll sensors once and dump data on terminal */
+ 110:../../../mod/sensor/sensor.c **** 	case SENSOR_DUMP_CODE: 
+ 111:../../../mod/sensor/sensor.c **** 		{
+ 112:../../../mod/sensor/sensor.c **** 		/* Tell the PC how many bytes to expect */
+ 113:../../../mod/sensor/sensor.c **** 		HAL_UART_Transmit( &huart1,
+ 114:../../../mod/sensor/sensor.c ****                            &num_sensor_bytes,
+ 115:../../../mod/sensor/sensor.c ****                            sizeof( num_sensor_bytes ), 
+ 116:../../../mod/sensor/sensor.c ****                            HAL_DEFAULT_TIMEOUT );
+ 117:../../../mod/sensor/sensor.c **** 
+ 118:../../../mod/sensor/sensor.c **** 		/* Get the sensor readings */
+ 119:../../../mod/sensor/sensor.c **** 	    sensor_subcmd_status = sensor_dump( &sensor_data_byte[0] );	
+ 120:../../../mod/sensor/sensor.c **** 
+ 121:../../../mod/sensor/sensor.c **** 		/* Transmit sensor readings to PC */
+ 122:../../../mod/sensor/sensor.c **** 		if ( sensor_subcmd_status == SENSOR_OK )
+ 123:../../../mod/sensor/sensor.c **** 			{
+ 124:../../../mod/sensor/sensor.c **** 			// readings_to_bytes( &sensor_readings_bytes[0], 
+ 125:../../../mod/sensor/sensor.c ****             //                    &sensor_readings[0] );
+ 126:../../../mod/sensor/sensor.c **** 			HAL_UART_Transmit( &huart1                   , 
+ 127:../../../mod/sensor/sensor.c ****                                &sensor_data_byte[0]      , 
+ 128:../../../mod/sensor/sensor.c ****                                sizeof( sensor_data_byte ), 
+ 129:../../../mod/sensor/sensor.c ****                                HAL_SENSOR_TIMEOUT );
+ 130:../../../mod/sensor/sensor.c **** 			return ( sensor_subcmd_status );
+ 131:../../../mod/sensor/sensor.c ****             }
+ 132:../../../mod/sensor/sensor.c **** 		else
+ 133:../../../mod/sensor/sensor.c **** 			{
+ 134:../../../mod/sensor/sensor.c **** 			/* Sensor readings not recieved */
+ 135:../../../mod/sensor/sensor.c **** 			return( SENSOR_FAIL );
+ 136:../../../mod/sensor/sensor.c ****             }
+ 137:../../../mod/sensor/sensor.c ****         } /* SENSOR_DUMP_CODE */
+ 138:../../../mod/sensor/sensor.c **** 
+ 139:../../../mod/sensor/sensor.c **** 	/* Subcommand not recognized */
+ 140:../../../mod/sensor/sensor.c **** 	default:
+ 141:../../../mod/sensor/sensor.c **** 		{
+ 142:../../../mod/sensor/sensor.c **** 		return ( SENSOR_UNRECOGNIZED_OP );
+ 143:../../../mod/sensor/sensor.c ****         }
+ 144:../../../mod/sensor/sensor.c ****     }
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\cc7S9Ugg.s 			page 4
+
+
+ 145:../../../mod/sensor/sensor.c **** 
+ 146:../../../mod/sensor/sensor.c **** } /* sensor_cmd_execute */
+ 147:../../../mod/sensor/sensor.c **** 
+ 148:../../../mod/sensor/sensor.c **** 
+ 149:../../../mod/sensor/sensor.c **** /*******************************************************************************
+ 150:../../../mod/sensor/sensor.c **** *                                                                              *
+ 151:../../../mod/sensor/sensor.c **** * PROCEDURE:                                                                   * 
+ 152:../../../mod/sensor/sensor.c **** * 		sensor_dump                                                            *
+ 153:../../../mod/sensor/sensor.c **** *                                                                              *
+ 154:../../../mod/sensor/sensor.c **** * DESCRIPTION:                                                                 * 
+ 155:../../../mod/sensor/sensor.c **** *       reads from all sensors and fill in the sensor data structure           *
+ 156:../../../mod/sensor/sensor.c **** *                                                                              *
+ 157:../../../mod/sensor/sensor.c **** *******************************************************************************/
+ 158:../../../mod/sensor/sensor.c **** SENSOR_STATUS sensor_dump 
+ 159:../../../mod/sensor/sensor.c **** 	(
+ 160:../../../mod/sensor/sensor.c ****     SENSOR_DATA*        sensor_data_ptr /* Pointer to the sensor data struct should 
+ 161:../../../mod/sensor/sensor.c ****                                         be written */ 
+ 162:../../../mod/sensor/sensor.c ****     )
+ 163:../../../mod/sensor/sensor.c **** {
+  29              		.loc 1 163 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		.loc 1 163 1 is_stmt 0 view .LVU1
+  34 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 24
+  37              		.cfi_offset 4, -24
+  38              		.cfi_offset 5, -20
+  39              		.cfi_offset 6, -16
+  40              		.cfi_offset 7, -12
+  41              		.cfi_offset 8, -8
+  42              		.cfi_offset 14, -4
+  43 0004 0446     		mov	r4, r0
+  44 0006 4FF00008 		mov	r8, #0
+ 164:../../../mod/sensor/sensor.c **** /*------------------------------------------------------------------------------
+ 165:../../../mod/sensor/sensor.c ****  Local variables 
+ 166:../../../mod/sensor/sensor.c **** ------------------------------------------------------------------------------*/
+ 167:../../../mod/sensor/sensor.c **** IMU_STATUS      accel_status;
+  45              		.loc 1 167 1 is_stmt 1 view .LVU2
+ 168:../../../mod/sensor/sensor.c **** IMU_STATUS      gyro_status;
+  46              		.loc 1 168 1 view .LVU3
+ 169:../../../mod/sensor/sensor.c **** IMU_STATUS      mag_status;
+  47              		.loc 1 169 1 view .LVU4
+ 170:../../../mod/sensor/sensor.c **** IMU_DATA        *pIMU_data,IMU_data;               /*Initialize IMU structure*/
+  48              		.loc 1 170 1 view .LVU5
+ 171:../../../mod/sensor/sensor.c **** pIMU_data     = &IMU_data;                         /*Initialize pointer to IMU structure*/
+  49              		.loc 1 171 1 view .LVU6
+  50              	.LVL1:
+ 172:../../../mod/sensor/sensor.c **** uint16_t        dummy_baro_pressure;
+  51              		.loc 1 172 1 view .LVU7
+ 173:../../../mod/sensor/sensor.c **** uint16_t        dummy_baro_temp;
+  52              		.loc 1 173 1 view .LVU8
+ 174:../../../mod/sensor/sensor.c **** 
+ 175:../../../mod/sensor/sensor.c **** /*------------------------------------------------------------------------------
+ 176:../../../mod/sensor/sensor.c ****  Call sensor API functions 
+ 177:../../../mod/sensor/sensor.c **** ------------------------------------------------------------------------------*/
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\cc7S9Ugg.s 			page 5
+
+
+ 178:../../../mod/sensor/sensor.c **** // TODO: Pass the sensor_data_ptr -> imu_data
+ 179:../../../mod/sensor/sensor.c **** accel_status         = imu_get_accel_xyz( &sensor_data_ptr->imu_data ); 
+  53              		.loc 1 179 1 view .LVU9
+  54              		.loc 1 179 24 is_stmt 0 view .LVU10
+  55 000a 071D     		adds	r7, r0, #4
+  56 000c 3846     		mov	r0, r7
+  57              	.LVL2:
+  58              		.loc 1 179 24 view .LVU11
+  59 000e FFF7FEFF 		bl	imu_get_accel_xyz
+  60              	.LVL3:
+  61 0012 0646     		mov	r6, r0
+  62              	.LVL4:
+ 180:../../../mod/sensor/sensor.c **** gyro_status          = imu_get_gyro_xyz( &sensor_data_ptr->imu_data );
+  63              		.loc 1 180 1 is_stmt 1 view .LVU12
+  64              		.loc 1 180 24 is_stmt 0 view .LVU13
+  65 0014 3846     		mov	r0, r7
+  66 0016 FFF7FEFF 		bl	imu_get_gyro_xyz
+  67              	.LVL5:
+  68 001a 0546     		mov	r5, r0
+  69              	.LVL6:
+ 181:../../../mod/sensor/sensor.c **** mag_status           = imu_get_mag_xyz( &sensor_data_ptr->imu_data );
+  70              		.loc 1 181 1 is_stmt 1 view .LVU14
+  71              		.loc 1 181 24 is_stmt 0 view .LVU15
+  72 001c 3846     		mov	r0, r7
+  73 001e FFF7FEFF 		bl	imu_get_mag_xyz
+  74              	.LVL7:
+  75 0022 0746     		mov	r7, r0
+  76              	.LVL8:
+ 182:../../../mod/sensor/sensor.c **** 
+ 183:../../../mod/sensor/sensor.c **** // TODO: Implement the actual get baro values
+ 184:../../../mod/sensor/sensor.c **** sensor_data_ptr->dummy_baro_pressure = dummy_baro_pressure;
+  77              		.loc 1 184 1 is_stmt 1 view .LVU16
+  78              		.loc 1 184 38 is_stmt 0 view .LVU17
+  79 0024 A4F81880 		strh	r8, [r4, #24]	@ movhi
+ 185:../../../mod/sensor/sensor.c **** sensor_data_ptr->dummy_baro_temp     = dummy_baro_temp;
+  80              		.loc 1 185 1 is_stmt 1 view .LVU18
+  81              		.loc 1 185 38 is_stmt 0 view .LVU19
+  82 0028 A4F81A80 		strh	r8, [r4, #26]	@ movhi
+ 186:../../../mod/sensor/sensor.c **** 
+ 187:../../../mod/sensor/sensor.c **** sensor_data_ptr->timer               = HAL_GetTick();
+  83              		.loc 1 187 1 is_stmt 1 view .LVU20
+  84              		.loc 1 187 40 is_stmt 0 view .LVU21
+  85 002c FFF7FEFF 		bl	HAL_GetTick
+  86              	.LVL9:
+  87              		.loc 1 187 38 view .LVU22
+  88 0030 2060     		str	r0, [r4]
+ 188:../../../mod/sensor/sensor.c **** 
+ 189:../../../mod/sensor/sensor.c **** // TODO: Implement memcpy sensor_data struct to pSensor_buffer (if read through USB)
+ 190:../../../mod/sensor/sensor.c **** // memcpy(pSensor_buffer, sensor_data, SENSOR_DATA_SIZE);
+ 191:../../../mod/sensor/sensor.c **** 
+ 192:../../../mod/sensor/sensor.c **** /*------------------------------------------------------------------------------
+ 193:../../../mod/sensor/sensor.c ****  Set command status from sensor API returns 
+ 194:../../../mod/sensor/sensor.c **** ------------------------------------------------------------------------------*/
+ 195:../../../mod/sensor/sensor.c **** if ( accel_status != IMU_TIMEOUT &&
+  89              		.loc 1 195 1 is_stmt 1 view .LVU23
+  90              		.loc 1 195 4 is_stmt 0 view .LVU24
+  91 0032 042E     		cmp	r6, #4
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\cc7S9Ugg.s 			page 6
+
+
+  92 0034 18BF     		it	ne
+  93 0036 042D     		cmpne	r5, #4
+  94 0038 06D0     		beq	.L3
+ 196:../../../mod/sensor/sensor.c ****      gyro_status  != IMU_TIMEOUT &&
+  95              		.loc 1 196 34 view .LVU25
+  96 003a 042F     		cmp	r7, #4
+  97 003c 02D0     		beq	.L6
+ 197:../../../mod/sensor/sensor.c ****      mag_status   != IMU_TIMEOUT  )
+ 198:../../../mod/sensor/sensor.c ****     {
+ 199:../../../mod/sensor/sensor.c ****         return SENSOR_OK;
+  98              		.loc 1 199 16 view .LVU26
+  99 003e 0020     		movs	r0, #0
+ 100              	.L2:
+ 200:../../../mod/sensor/sensor.c ****     }
+ 201:../../../mod/sensor/sensor.c ****     else
+ 202:../../../mod/sensor/sensor.c ****     {
+ 203:../../../mod/sensor/sensor.c ****         return SENSOR_IMU_FAIL;
+ 204:../../../mod/sensor/sensor.c ****     }
+ 205:../../../mod/sensor/sensor.c **** } /* sensor_dump */
+ 101              		.loc 1 205 1 view .LVU27
+ 102 0040 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 103              	.LVL10:
+ 104              	.L6:
+ 203:../../../mod/sensor/sensor.c ****     }
+ 105              		.loc 1 203 16 view .LVU28
+ 106 0044 0320     		movs	r0, #3
+ 107 0046 FBE7     		b	.L2
+ 108              	.L3:
+ 109 0048 0320     		movs	r0, #3
+ 110 004a F9E7     		b	.L2
+ 111              		.cfi_endproc
+ 112              	.LFE145:
+ 114              		.section	.text.sensor_cmd_execute,"ax",%progbits
+ 115              		.align	1
+ 116              		.global	sensor_cmd_execute
+ 117              		.syntax unified
+ 118              		.thumb
+ 119              		.thumb_func
+ 121              	sensor_cmd_execute:
+ 122              	.LVL11:
+ 123              	.LFB144:
+  48:../../../mod/sensor/sensor.c **** 
+ 124              		.loc 1 48 1 is_stmt 1 view -0
+ 125              		.cfi_startproc
+ 126              		@ args = 0, pretend = 0, frame = 32
+ 127              		@ frame_needed = 0, uses_anonymous_args = 0
+  48:../../../mod/sensor/sensor.c **** 
+ 128              		.loc 1 48 1 is_stmt 0 view .LVU30
+ 129 0000 10B5     		push	{r4, lr}
+ 130              	.LCFI1:
+ 131              		.cfi_def_cfa_offset 8
+ 132              		.cfi_offset 4, -8
+ 133              		.cfi_offset 14, -4
+ 134 0002 88B0     		sub	sp, sp, #32
+ 135              	.LCFI2:
+ 136              		.cfi_def_cfa_offset 40
+  53:../../../mod/sensor/sensor.c ****                                                  subcommand function returned 
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\cc7S9Ugg.s 			page 7
+
+
+ 137              		.loc 1 53 1 is_stmt 1 view .LVU31
+  69:../../../mod/sensor/sensor.c ****                                                      with size of all sensor data*/
+ 138              		.loc 1 69 1 view .LVU32
+  71:../../../mod/sensor/sensor.c **** 
+ 139              		.loc 1 71 1 view .LVU33
+  71:../../../mod/sensor/sensor.c **** 
+ 140              		.loc 1 71 15 is_stmt 0 view .LVU34
+ 141 0004 1A23     		movs	r3, #26
+ 142 0006 8DF80330 		strb	r3, [sp, #3]
+  88:../../../mod/sensor/sensor.c **** ( 
+ 143              		.loc 1 88 1 is_stmt 1 view .LVU35
+ 144 000a 0023     		movs	r3, #0
+ 145 000c 0193     		str	r3, [sp, #4]
+ 146 000e 0293     		str	r3, [sp, #8]
+ 147 0010 0393     		str	r3, [sp, #12]
+ 148 0012 0493     		str	r3, [sp, #16]
+ 149 0014 0593     		str	r3, [sp, #20]
+ 150 0016 0693     		str	r3, [sp, #24]
+ 151 0018 ADF81C30 		strh	r3, [sp, #28]	@ movhi
+  99:../../../mod/sensor/sensor.c **** 	{
+ 152              		.loc 1 99 1 view .LVU36
+ 153 001c 0128     		cmp	r0, #1
+ 154 001e 05D0     		beq	.L8
+ 155 0020 0228     		cmp	r0, #2
+ 156 0022 18D1     		bne	.L10
+ 157 0024 0446     		mov	r4, r0
+ 158              	.LVL12:
+ 159              	.L9:
+ 146:../../../mod/sensor/sensor.c **** 
+ 160              		.loc 1 146 1 is_stmt 0 view .LVU37
+ 161 0026 2046     		mov	r0, r4
+ 162 0028 08B0     		add	sp, sp, #32
+ 163              	.LCFI3:
+ 164              		.cfi_remember_state
+ 165              		.cfi_def_cfa_offset 8
+ 166              		@ sp needed
+ 167 002a 10BD     		pop	{r4, pc}
+ 168              	.LVL13:
+ 169              	.L8:
+ 170              	.LCFI4:
+ 171              		.cfi_restore_state
+ 113:../../../mod/sensor/sensor.c ****                            &num_sensor_bytes,
+ 172              		.loc 1 113 3 is_stmt 1 view .LVU38
+ 173 002c 0123     		movs	r3, #1
+ 174 002e 1A46     		mov	r2, r3
+ 175 0030 0DF10301 		add	r1, sp, #3
+ 176 0034 0948     		ldr	r0, .L14
+ 177              	.LVL14:
+ 113:../../../mod/sensor/sensor.c ****                            &num_sensor_bytes,
+ 178              		.loc 1 113 3 is_stmt 0 view .LVU39
+ 179 0036 FFF7FEFF 		bl	HAL_UART_Transmit
+ 180              	.LVL15:
+ 119:../../../mod/sensor/sensor.c **** 
+ 181              		.loc 1 119 6 is_stmt 1 view .LVU40
+ 119:../../../mod/sensor/sensor.c **** 
+ 182              		.loc 1 119 29 is_stmt 0 view .LVU41
+ 183 003a 01A8     		add	r0, sp, #4
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\cc7S9Ugg.s 			page 8
+
+
+ 184 003c FFF7FEFF 		bl	sensor_dump
+ 185              	.LVL16:
+ 122:../../../mod/sensor/sensor.c **** 			{
+ 186              		.loc 1 122 3 is_stmt 1 view .LVU42
+ 122:../../../mod/sensor/sensor.c **** 			{
+ 187              		.loc 1 122 6 is_stmt 0 view .LVU43
+ 188 0040 0446     		mov	r4, r0
+ 189 0042 08B1     		cbz	r0, .L13
+ 135:../../../mod/sensor/sensor.c ****             }
+ 190              		.loc 1 135 10 view .LVU44
+ 191 0044 0424     		movs	r4, #4
+ 192 0046 EEE7     		b	.L9
+ 193              	.L13:
+ 126:../../../mod/sensor/sensor.c ****                                &sensor_data_byte[0]      , 
+ 194              		.loc 1 126 4 is_stmt 1 view .LVU45
+ 195 0048 2823     		movs	r3, #40
+ 196 004a 1A22     		movs	r2, #26
+ 197 004c 01A9     		add	r1, sp, #4
+ 198 004e 0348     		ldr	r0, .L14
+ 199              	.LVL17:
+ 126:../../../mod/sensor/sensor.c ****                                &sensor_data_byte[0]      , 
+ 200              		.loc 1 126 4 is_stmt 0 view .LVU46
+ 201 0050 FFF7FEFF 		bl	HAL_UART_Transmit
+ 202              	.LVL18:
+ 130:../../../mod/sensor/sensor.c ****             }
+ 203              		.loc 1 130 4 is_stmt 1 view .LVU47
+ 130:../../../mod/sensor/sensor.c ****             }
+ 204              		.loc 1 130 11 is_stmt 0 view .LVU48
+ 205 0054 E7E7     		b	.L9
+ 206              	.LVL19:
+ 207              	.L10:
+ 142:../../../mod/sensor/sensor.c ****         }
+ 208              		.loc 1 142 10 view .LVU49
+ 209 0056 0124     		movs	r4, #1
+ 210 0058 E5E7     		b	.L9
+ 211              	.L15:
+ 212 005a 00BF     		.align	2
+ 213              	.L14:
+ 214 005c 00000000 		.word	huart1
+ 215              		.cfi_endproc
+ 216              	.LFE144:
+ 218              		.text
+ 219              	.Letext0:
+ 220              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 221              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 222              		.file 4 "../../../lib/Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h750xx.h"
+ 223              		.file 5 "../../../lib/Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 224              		.file 6 "../../../lib/Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h"
+ 225              		.file 7 "../../../lib/Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h"
+ 226              		.file 8 "../../../mod/imu/imu.h"
+ 227              		.file 9 "../../../mod/sensor/sensor.h"
+ 228              		.file 10 "../../../lib/Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h"
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\cc7S9Ugg.s 			page 9
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 sensor.c
+C:\Users\tnguy\AppData\Local\Temp\cc7S9Ugg.s:19     .text.sensor_dump:00000000 $t
+C:\Users\tnguy\AppData\Local\Temp\cc7S9Ugg.s:25     .text.sensor_dump:00000000 sensor_dump
+C:\Users\tnguy\AppData\Local\Temp\cc7S9Ugg.s:115    .text.sensor_cmd_execute:00000000 $t
+C:\Users\tnguy\AppData\Local\Temp\cc7S9Ugg.s:121    .text.sensor_cmd_execute:00000000 sensor_cmd_execute
+C:\Users\tnguy\AppData\Local\Temp\cc7S9Ugg.s:214    .text.sensor_cmd_execute:0000005c $d
+
+UNDEFINED SYMBOLS
+imu_get_accel_xyz
+imu_get_gyro_xyz
+imu_get_mag_xyz
+HAL_GetTick
+HAL_UART_Transmit
+huart1

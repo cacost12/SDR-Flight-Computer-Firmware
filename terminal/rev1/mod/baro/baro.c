@@ -33,6 +33,145 @@ extern I2C_HandleTypeDef hi2c1; /* MCU I2C handle */
  Procedures 
 ------------------------------------------------------------------------------*/
 
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   * 
+* 		BARO_Read_Register                                                     *
+*                                                                              *
+* DESCRIPTION:                                                                 * 
+* 		Read one register for BARO 											   *
+*                                                                              *
+*******************************************************************************/
+BARO_STATUS BARO_Read_Register
+    (
+    uint8_t reg_addr, 
+    uint8_t *pData
+    )
+{
+
+/*------------------------------------------------------------------------------
+ Local variables  
+------------------------------------------------------------------------------*/
+HAL_StatusTypeDef hal_status;
+/*------------------------------------------------------------------------------
+ API function implementation 
+------------------------------------------------------------------------------*/
+
+/*Read I2C register*/
+hal_status = HAL_I2C_Mem_Read
+                            (
+                            &hi2c1, 
+                            BARO_I2C_ADDR, 
+                            reg_addr, 	
+                            I2C_MEMADD_SIZE_8BIT, 
+                            pData, 
+                            sizeof( uint8_t ), 
+                            HAL_DEFAULT_TIMEOUT 
+                            ); 
+
+if (hal_status != HAL_TIMEOUT){
+return BARO_OK;
+}
+else
+{
+return BARO_TIMEOUT;
+}
+} /* BARO_Read_Register */
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   * 
+* 		BARO_Read_Registers                                                    *
+*                                                                              *
+* DESCRIPTION:                                                                 * 
+* 		Read the specific numbers of registers at one time for BARO            *
+*                                                                              *
+*******************************************************************************/
+BARO_STATUS BARO_Read_Registers
+    (
+    uint8_t reg_addr, 
+    uint8_t *pData, 
+    uint8_t num_registers
+    )
+{
+
+/*------------------------------------------------------------------------------
+ Local variables  
+------------------------------------------------------------------------------*/
+HAL_StatusTypeDef hal_status;
+/*------------------------------------------------------------------------------
+ API function implementation 
+------------------------------------------------------------------------------*/
+
+/*Read I2C register*/
+hal_status = HAL_I2C_Mem_Read
+                            (
+                            &hi2c1, 
+                            BARO_I2C_ADDR, 
+                            reg_addr, 
+                            I2C_MEMADD_SIZE_8BIT, 
+                            pData, 
+                            num_registers, 
+                            HAL_DEFAULT_TIMEOUT
+                            );
+
+if (hal_status != HAL_TIMEOUT)
+{
+return BARO_OK;
+}
+else
+{
+return BARO_TIMEOUT;
+}
+} /* BARO_Read_Registers */
+
+/*******************************************************************************
+*                                                                              *
+* PROCEDURE:                                                                   * 
+* 		BARO_Write_Register                                                    *
+*                                                                              *
+* DESCRIPTION:                                                                 * 
+* 		Write one register to the BARO                                         *
+*                                                                              *
+*******************************************************************************/
+
+BARO_STATUS BARO_Write_Register
+    (
+    uint8_t reg_addr, 
+    uint8_t *pData
+    )
+{
+    
+/*------------------------------------------------------------------------------
+ Local variables  
+------------------------------------------------------------------------------*/
+HAL_StatusTypeDef hal_status;
+
+/*------------------------------------------------------------------------------
+ API function implementation 
+------------------------------------------------------------------------------*/
+hal_status = HAL_I2C_Mem_Write
+							(
+							&hi2c1, 
+							BARO_I2C_ADDR, 
+							reg_addr, 
+							I2C_MEMADD_SIZE_8BIT, 
+							pData, 
+							sizeof( uint8_t ), 
+							HAL_DEFAULT_TIMEOUT
+							);
+
+if (hal_status != HAL_TIMEOUT)
+{
+return BARO_OK;
+}
+else
+{
+return BARO_TIMEOUT;
+}
+} /* BARO_Write_Register */
+
+
 
 /*******************************************************************************
 *                                                                              *
@@ -104,9 +243,39 @@ switch ( hal_status )
 *******************************************************************************/
 BARO_STATUS baro_get_pressure
 	(
-    void
+    uint32_t baro_pressure_data
 	)
 {
+/*------------------------------------------------------------------------------
+ Local variables 
+------------------------------------------------------------------------------*/
+uint8_t 	regPres[3];
+BARO_STATUS baro_status;
+
+/*------------------------------------------------------------------------------
+ API function implementation 
+------------------------------------------------------------------------------*/
+
+/* Read 3 consecutive pressure data registers */  
+baro_status = BARO_Read_Registers
+								(
+								BARO_PRESSURE_DATA,
+								&regPres[0], 
+								3
+								);
+
+/* Check for HAL BARO error */
+if ( baro_status == BARO_TIMEOUT )
+{
+	return BARO_TIMEOUT;
+}
+
+/* Combine all bytes value to 24 bit value */
+uint32_t baro_pressure_raw = ( ( uint32_t regPres[0] << 24 ) | ( uint32_t regPres[1] << 16 ) | ( uint32_t regPres[0] << 8 ) ) >> 8;
+
+/* Export data */
+baro_pressure_data = baro_pressure_raw;
+
 return BARO_OK;
 } /* baro_get_pressure */
 
@@ -122,9 +291,40 @@ return BARO_OK;
 *******************************************************************************/
 BARO_STATUS baro_get_temp
 	(
-    void
+    uint32_t baro_temp_data
 	)
 {
+/*------------------------------------------------------------------------------
+ Local variables 
+------------------------------------------------------------------------------*/
+uint8_t 	regPres[3];
+BARO_STATUS baro_status;
+
+/*------------------------------------------------------------------------------
+ API function implementation 
+------------------------------------------------------------------------------*/
+
+/* Read 3 consecutive temperature data registers */  
+baro_status = BARO_Read_Registers
+								(
+								BARO_TEMPERATURE_DATA,
+								&regPres[0], 
+								3
+								);
+
+/* Check for HAL BARO error */
+if ( baro_status == BARO_TIMEOUT )	
+{
+	return BARO_TIMEOUT;
+}
+
+/* Combine all bytes value to 24 bit value */
+uint32_t baro_temp_raw = ( ( uint32_t regPres[0] << 24 ) | ( uint32_t regPres[1] << 16 ) | ( uint32_t regPres[0] << 8 ) ) >> 8;
+
+/* Export data */
+baro_temp_data = baro_temp_raw;
+
+
 return BARO_OK;
 } /* baro_get_temp */
 

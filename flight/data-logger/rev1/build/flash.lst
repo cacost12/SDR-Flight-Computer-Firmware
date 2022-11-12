@@ -1,0 +1,2273 @@
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"flash.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.text.flash_status,"ax",%progbits
+  19              		.align	1
+  20              		.global	flash_status
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	flash_status:
+  26              	.LVL0:
+  27              	.LFB145:
+  28              		.file 1 "../../../mod/flash/flash.c"
+   1:../../../mod/flash/flash.c **** /*******************************************************************************
+   2:../../../mod/flash/flash.c **** *
+   3:../../../mod/flash/flash.c **** * FILE: 
+   4:../../../mod/flash/flash.c **** * 		flash.c
+   5:../../../mod/flash/flash.c **** *
+   6:../../../mod/flash/flash.c **** * DESCRIPTION: 
+   7:../../../mod/flash/flash.c **** * 		Contains API functions for writing and reading data from the engine 
+   8:../../../mod/flash/flash.c **** *       controller's flash 
+   9:../../../mod/flash/flash.c **** *
+  10:../../../mod/flash/flash.c **** *******************************************************************************/
+  11:../../../mod/flash/flash.c **** 
+  12:../../../mod/flash/flash.c **** 
+  13:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+  14:../../../mod/flash/flash.c ****  Standard Includes                                                                     
+  15:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+  16:../../../mod/flash/flash.c **** 
+  17:../../../mod/flash/flash.c **** 
+  18:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+  19:../../../mod/flash/flash.c ****  Project Includes                                                                     
+  20:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+  21:../../../mod/flash/flash.c **** #include "main.h"
+  22:../../../mod/flash/flash.c **** #include "sdr_pin_defines_A0002.h"
+  23:../../../mod/flash/flash.c **** #include "flash.h"
+  24:../../../mod/flash/flash.c **** #include "led.h"
+  25:../../../mod/flash/flash.c **** 
+  26:../../../mod/flash/flash.c **** 
+  27:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+  28:../../../mod/flash/flash.c ****  Global Variables 
+  29:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+  30:../../../mod/flash/flash.c **** extern SPI_HandleTypeDef hspi2;
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 2
+
+
+  31:../../../mod/flash/flash.c **** 
+  32:../../../mod/flash/flash.c **** 
+  33:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+  34:../../../mod/flash/flash.c ****  Procedures 
+  35:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+  36:../../../mod/flash/flash.c **** 
+  37:../../../mod/flash/flash.c **** 
+  38:../../../mod/flash/flash.c **** /*******************************************************************************
+  39:../../../mod/flash/flash.c **** *                                                                              *
+  40:../../../mod/flash/flash.c **** * PROCEDURE:                                                                   * 
+  41:../../../mod/flash/flash.c **** * 		flash_cmd_execute                                                      *
+  42:../../../mod/flash/flash.c **** *                                                                              *
+  43:../../../mod/flash/flash.c **** * DESCRIPTION:                                                                 * 
+  44:../../../mod/flash/flash.c **** * 		Executes a flash subcommand based on input from the sdec terminal      *
+  45:../../../mod/flash/flash.c **** *                                                                              *
+  46:../../../mod/flash/flash.c **** *******************************************************************************/
+  47:../../../mod/flash/flash.c **** FLASH_STATUS flash_cmd_execute
+  48:../../../mod/flash/flash.c **** 	(
+  49:../../../mod/flash/flash.c ****     uint8_t             subcommand   ,
+  50:../../../mod/flash/flash.c **** 	HFLASH_BUFFER*      pflash_handle,
+  51:../../../mod/flash/flash.c **** 	UART_HandleTypeDef* huart
+  52:../../../mod/flash/flash.c ****     )
+  53:../../../mod/flash/flash.c **** {
+  54:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+  55:../../../mod/flash/flash.c ****  Local Variables 
+  56:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+  57:../../../mod/flash/flash.c **** uint8_t          opcode;                    /* Subcommand opcode              */
+  58:../../../mod/flash/flash.c **** uint8_t          num_bytes;                 /* Number of bytes on which to 
+  59:../../../mod/flash/flash.c ****                                                operate                        */
+  60:../../../mod/flash/flash.c **** uint8_t          status;                    /* Return value of UART API calls */
+  61:../../../mod/flash/flash.c **** 
+  62:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+  63:../../../mod/flash/flash.c ****  Command Input processing 
+  64:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+  65:../../../mod/flash/flash.c **** opcode    = ( subcommand & FLASH_SUBCMD_OP_BITMASK ) >>  5;
+  66:../../../mod/flash/flash.c **** num_bytes = ( subcommand & FLASH_NBYTES_BITMASK    ); 
+  67:../../../mod/flash/flash.c **** 
+  68:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+  69:../../../mod/flash/flash.c ****  Call API function 
+  70:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+  71:../../../mod/flash/flash.c **** switch(opcode)
+  72:../../../mod/flash/flash.c **** 	{
+  73:../../../mod/flash/flash.c ****     /* READ Subcommand */
+  74:../../../mod/flash/flash.c ****     case FLASH_SUBCMD_READ:
+  75:../../../mod/flash/flash.c ****         {
+  76:../../../mod/flash/flash.c **** 		return FLASH_UNSUPPORTED_OP;	
+  77:../../../mod/flash/flash.c ****         }
+  78:../../../mod/flash/flash.c **** 
+  79:../../../mod/flash/flash.c ****     /* ENABLE Subcommand */
+  80:../../../mod/flash/flash.c ****     case FLASH_SUBCMD_ENABLE:
+  81:../../../mod/flash/flash.c ****         {
+  82:../../../mod/flash/flash.c **** 		status = flash_write_enable( pflash_handle );
+  83:../../../mod/flash/flash.c **** 		return status;
+  84:../../../mod/flash/flash.c ****         }
+  85:../../../mod/flash/flash.c **** 
+  86:../../../mod/flash/flash.c ****     /* DISABLE Subcommand */
+  87:../../../mod/flash/flash.c ****     case FLASH_SUBCMD_DISABLE:
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 3
+
+
+  88:../../../mod/flash/flash.c ****         {
+  89:../../../mod/flash/flash.c **** 		status = flash_write_disable( pflash_handle );
+  90:../../../mod/flash/flash.c **** 		return status;
+  91:../../../mod/flash/flash.c ****         }
+  92:../../../mod/flash/flash.c **** 
+  93:../../../mod/flash/flash.c ****     /* WRITE Subcommand */
+  94:../../../mod/flash/flash.c ****     case FLASH_SUBCMD_WRITE:
+  95:../../../mod/flash/flash.c ****         {
+  96:../../../mod/flash/flash.c **** 		/* Get Address bits */
+  97:../../../mod/flash/flash.c **** 		status = HAL_UART_Receive(
+  98:../../../mod/flash/flash.c ****                                  huart                             , 
+  99:../../../mod/flash/flash.c ****                                  &( pflash_handle -> address[0] )  , 
+ 100:../../../mod/flash/flash.c ****                                  sizeof( pflash_handle -> address ), 
+ 101:../../../mod/flash/flash.c ****                                  HAL_DEFAULT_TIMEOUT
+ 102:../../../mod/flash/flash.c ****                                  );
+ 103:../../../mod/flash/flash.c **** 		if (status != HAL_TIMEOUT )
+ 104:../../../mod/flash/flash.c **** 			{
+ 105:../../../mod/flash/flash.c **** 			/* Get bytes to be written to flash */
+ 106:../../../mod/flash/flash.c **** 			for (int i = 0; i < num_bytes; ++i)
+ 107:../../../mod/flash/flash.c **** 				{
+ 108:../../../mod/flash/flash.c **** 				uint8_t* pbuffer = ( pflash_handle -> pbuffer ) + i;
+ 109:../../../mod/flash/flash.c **** 				status = HAL_UART_Receive(
+ 110:../../../mod/flash/flash.c ****                                          huart              , 
+ 111:../../../mod/flash/flash.c ****                                          pbuffer            , 
+ 112:../../../mod/flash/flash.c ****                                          sizeof( uint8_t )  , 
+ 113:../../../mod/flash/flash.c ****                                          HAL_DEFAULT_TIMEOUT
+ 114:../../../mod/flash/flash.c ****                                          );
+ 115:../../../mod/flash/flash.c **** 				if (status == HAL_TIMEOUT)
+ 116:../../../mod/flash/flash.c **** 					{
+ 117:../../../mod/flash/flash.c **** 					/* Bytes not received */
+ 118:../../../mod/flash/flash.c **** 				    return FLASH_TIMEOUT;	
+ 119:../../../mod/flash/flash.c ****                     }
+ 120:../../../mod/flash/flash.c **** 				else
+ 121:../../../mod/flash/flash.c **** 					{
+ 122:../../../mod/flash/flash.c **** 					/* Do nothing, UART working fine */
+ 123:../../../mod/flash/flash.c ****                     }
+ 124:../../../mod/flash/flash.c **** 				}
+ 125:../../../mod/flash/flash.c ****             }
+ 126:../../../mod/flash/flash.c **** 		else    	
+ 127:../../../mod/flash/flash.c **** 			{
+ 128:../../../mod/flash/flash.c **** 			/* Address not recieved */
+ 129:../../../mod/flash/flash.c **** 			return FLASH_TIMEOUT;
+ 130:../../../mod/flash/flash.c ****             }
+ 131:../../../mod/flash/flash.c **** 
+ 132:../../../mod/flash/flash.c **** 		/* Call API function */
+ 133:../../../mod/flash/flash.c **** 		flash_write( pflash_handle );
+ 134:../../../mod/flash/flash.c **** 
+ 135:../../../mod/flash/flash.c **** 	    return FLASH_OK;	
+ 136:../../../mod/flash/flash.c ****         }
+ 137:../../../mod/flash/flash.c **** 
+ 138:../../../mod/flash/flash.c ****     /* ERASE Subcommand */
+ 139:../../../mod/flash/flash.c ****     case FLASH_SUBCMD_ERASE:
+ 140:../../../mod/flash/flash.c ****         {
+ 141:../../../mod/flash/flash.c **** 	    return FLASH_UNSUPPORTED_OP;	
+ 142:../../../mod/flash/flash.c ****         }
+ 143:../../../mod/flash/flash.c **** 
+ 144:../../../mod/flash/flash.c ****     /* STATUS Subcommand */
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 4
+
+
+ 145:../../../mod/flash/flash.c ****     case FLASH_SUBCMD_STATUS:
+ 146:../../../mod/flash/flash.c ****         {
+ 147:../../../mod/flash/flash.c **** 		/* Call API function */
+ 148:../../../mod/flash/flash.c **** 		status = flash_status( pflash_handle );
+ 149:../../../mod/flash/flash.c **** 		if ( status == FLASH_TIMEOUT )
+ 150:../../../mod/flash/flash.c **** 			{
+ 151:../../../mod/flash/flash.c ****             return FLASH_TIMEOUT;
+ 152:../../../mod/flash/flash.c ****             }
+ 153:../../../mod/flash/flash.c **** 
+ 154:../../../mod/flash/flash.c **** 		/* Send status register contents back to PC */
+ 155:../../../mod/flash/flash.c **** 		HAL_UART_Transmit( 
+ 156:../../../mod/flash/flash.c ****                          huart                                     , 
+ 157:../../../mod/flash/flash.c ****                          &( pflash_handle -> status_register )     ,
+ 158:../../../mod/flash/flash.c ****                          sizeof( pflash_handle -> status_register ),
+ 159:../../../mod/flash/flash.c ****                          HAL_DEFAULT_TIMEOUT 
+ 160:../../../mod/flash/flash.c ****                          );
+ 161:../../../mod/flash/flash.c **** 	    return FLASH_OK;	
+ 162:../../../mod/flash/flash.c ****         }
+ 163:../../../mod/flash/flash.c **** 
+ 164:../../../mod/flash/flash.c ****     /* Unrecognized subcommand code: invoke error handler */
+ 165:../../../mod/flash/flash.c **** 	default:
+ 166:../../../mod/flash/flash.c ****         {
+ 167:../../../mod/flash/flash.c **** 	    return FLASH_UNRECOGNIZED_OP;	
+ 168:../../../mod/flash/flash.c ****         }
+ 169:../../../mod/flash/flash.c ****     }
+ 170:../../../mod/flash/flash.c **** } /* flash_cmd_execute */
+ 171:../../../mod/flash/flash.c **** 
+ 172:../../../mod/flash/flash.c **** 
+ 173:../../../mod/flash/flash.c **** /*******************************************************************************
+ 174:../../../mod/flash/flash.c **** *                                                                              *
+ 175:../../../mod/flash/flash.c **** * PROCEDURE:                                                                   * 
+ 176:../../../mod/flash/flash.c **** * 		flash_status                                                           *
+ 177:../../../mod/flash/flash.c **** *                                                                              *
+ 178:../../../mod/flash/flash.c **** * DESCRIPTION:                                                                 * 
+ 179:../../../mod/flash/flash.c **** *       Read the status register of the flash chip                             *
+ 180:../../../mod/flash/flash.c **** *                                                                              *
+ 181:../../../mod/flash/flash.c **** *******************************************************************************/
+ 182:../../../mod/flash/flash.c **** FLASH_STATUS flash_status
+ 183:../../../mod/flash/flash.c **** 	(
+ 184:../../../mod/flash/flash.c **** 	HFLASH_BUFFER* pflash_handle
+ 185:../../../mod/flash/flash.c ****     )
+ 186:../../../mod/flash/flash.c **** {
+  29              		.loc 1 186 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 8
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		.loc 1 186 1 is_stmt 0 view .LVU1
+  34 0000 30B5     		push	{r4, r5, lr}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 12
+  37              		.cfi_offset 4, -12
+  38              		.cfi_offset 5, -8
+  39              		.cfi_offset 14, -4
+  40 0002 83B0     		sub	sp, sp, #12
+  41              	.LCFI1:
+  42              		.cfi_def_cfa_offset 24
+  43 0004 0446     		mov	r4, r0
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 5
+
+
+ 187:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 188:../../../mod/flash/flash.c ****  Local variables 
+ 189:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 190:../../../mod/flash/flash.c **** uint8_t hal_status;     /* Status code returned by hal spi functions          */
+  44              		.loc 1 190 1 is_stmt 1 view .LVU2
+ 191:../../../mod/flash/flash.c **** uint8_t transmit_data;  /* Data to be transmitted over SPI                    */
+  45              		.loc 1 191 1 view .LVU3
+ 192:../../../mod/flash/flash.c **** 
+ 193:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 194:../../../mod/flash/flash.c ****  Initialiazations 
+ 195:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 196:../../../mod/flash/flash.c **** hal_status    = HAL_OK;
+  46              		.loc 1 196 1 view .LVU4
+  47              	.LVL1:
+ 197:../../../mod/flash/flash.c **** transmit_data = FLASH_OP_HW_RDSR;
+  48              		.loc 1 197 1 view .LVU5
+  49              		.loc 1 197 15 is_stmt 0 view .LVU6
+  50 0006 0523     		movs	r3, #5
+  51 0008 8DF80730 		strb	r3, [sp, #7]
+ 198:../../../mod/flash/flash.c **** 
+ 199:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 200:../../../mod/flash/flash.c ****  API function implementation 
+ 201:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 202:../../../mod/flash/flash.c **** 
+ 203:../../../mod/flash/flash.c **** /* Drive slave select line low */
+ 204:../../../mod/flash/flash.c **** HAL_GPIO_WritePin(
+  52              		.loc 1 204 1 is_stmt 1 view .LVU7
+  53 000c 0022     		movs	r2, #0
+  54 000e 4FF48051 		mov	r1, #4096
+  55 0012 1248     		ldr	r0, .L6
+  56              	.LVL2:
+  57              		.loc 1 204 1 is_stmt 0 view .LVU8
+  58 0014 FFF7FEFF 		bl	HAL_GPIO_WritePin
+  59              	.LVL3:
+ 205:../../../mod/flash/flash.c **** 				 FLASH_SS_GPIO_PORT,
+ 206:../../../mod/flash/flash.c ****                  FLASH_SS_PIN      ,
+ 207:../../../mod/flash/flash.c ****                  GPIO_PIN_RESET
+ 208:../../../mod/flash/flash.c ****                  );
+ 209:../../../mod/flash/flash.c **** 
+ 210:../../../mod/flash/flash.c **** /* Send RDSR code to flash chip */
+ 211:../../../mod/flash/flash.c **** hal_status = HAL_SPI_Transmit(
+  60              		.loc 1 211 1 is_stmt 1 view .LVU9
+  61              		.loc 1 211 14 is_stmt 0 view .LVU10
+  62 0018 04F10805 		add	r5, r4, #8
+  63 001c 0123     		movs	r3, #1
+  64 001e 1A46     		mov	r2, r3
+  65 0020 0DF10701 		add	r1, sp, #7
+  66 0024 2846     		mov	r0, r5
+  67 0026 FFF7FEFF 		bl	HAL_SPI_Transmit
+  68              	.LVL4:
+ 212:../../../mod/flash/flash.c **** 							 &( pflash_handle -> hspi ),
+ 213:../../../mod/flash/flash.c ****                              &transmit_data            ,
+ 214:../../../mod/flash/flash.c ****                              sizeof( transmit_data )   ,
+ 215:../../../mod/flash/flash.c ****                              HAL_DEFAULT_TIMEOUT 
+ 216:../../../mod/flash/flash.c ****                              );
+ 217:../../../mod/flash/flash.c **** if ( hal_status == HAL_TIMEOUT )
+  69              		.loc 1 217 1 is_stmt 1 view .LVU11
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 6
+
+
+  70              		.loc 1 217 4 is_stmt 0 view .LVU12
+  71 002a 0328     		cmp	r0, #3
+  72 002c 12D0     		beq	.L3
+ 218:../../../mod/flash/flash.c **** 	{
+ 219:../../../mod/flash/flash.c **** 	return FLASH_TIMEOUT;
+ 220:../../../mod/flash/flash.c ****     }
+ 221:../../../mod/flash/flash.c **** 
+ 222:../../../mod/flash/flash.c **** /* Recieve status code */
+ 223:../../../mod/flash/flash.c **** hal_status = HAL_SPI_Receive(
+  73              		.loc 1 223 1 is_stmt 1 view .LVU13
+  74              		.loc 1 223 14 is_stmt 0 view .LVU14
+  75 002e 0123     		movs	r3, #1
+  76 0030 1A46     		mov	r2, r3
+  77 0032 04F19101 		add	r1, r4, #145
+  78 0036 2846     		mov	r0, r5
+  79              	.LVL5:
+  80              		.loc 1 223 14 view .LVU15
+  81 0038 FFF7FEFF 		bl	HAL_SPI_Receive
+  82              	.LVL6:
+  83 003c 0446     		mov	r4, r0
+  84              	.LVL7:
+ 224:../../../mod/flash/flash.c ****                             &( pflash_handle      -> hspi            ),
+ 225:../../../mod/flash/flash.c ****                             &( pflash_handle      -> status_register ),
+ 226:../../../mod/flash/flash.c ****                             sizeof( pflash_handle -> status_register ),
+ 227:../../../mod/flash/flash.c **** 							HAL_DEFAULT_TIMEOUT
+ 228:../../../mod/flash/flash.c ****                             );
+ 229:../../../mod/flash/flash.c **** if ( hal_status == HAL_TIMEOUT )
+  85              		.loc 1 229 1 is_stmt 1 view .LVU16
+  86              		.loc 1 229 4 is_stmt 0 view .LVU17
+  87 003e 0328     		cmp	r0, #3
+  88 0040 0AD0     		beq	.L4
+ 230:../../../mod/flash/flash.c **** 	{
+ 231:../../../mod/flash/flash.c **** 	return FLASH_TIMEOUT;
+ 232:../../../mod/flash/flash.c ****     }
+ 233:../../../mod/flash/flash.c **** 
+ 234:../../../mod/flash/flash.c **** /* Drive slave select line high */
+ 235:../../../mod/flash/flash.c **** HAL_GPIO_WritePin(
+  89              		.loc 1 235 1 is_stmt 1 view .LVU18
+  90 0042 0122     		movs	r2, #1
+  91 0044 4FF48051 		mov	r1, #4096
+  92 0048 0448     		ldr	r0, .L6
+  93              	.LVL8:
+  94              		.loc 1 235 1 is_stmt 0 view .LVU19
+  95 004a FFF7FEFF 		bl	HAL_GPIO_WritePin
+  96              	.LVL9:
+ 236:../../../mod/flash/flash.c ****                  FLASH_SS_GPIO_PORT,
+ 237:../../../mod/flash/flash.c ****                  FLASH_SS_PIN      ,
+ 238:../../../mod/flash/flash.c ****                  GPIO_PIN_SET
+ 239:../../../mod/flash/flash.c ****                  );
+ 240:../../../mod/flash/flash.c **** 
+ 241:../../../mod/flash/flash.c **** /* Flash status register read successful */
+ 242:../../../mod/flash/flash.c **** return hal_status;
+  97              		.loc 1 242 1 is_stmt 1 view .LVU20
+  98              	.L2:
+ 243:../../../mod/flash/flash.c **** 
+ 244:../../../mod/flash/flash.c **** } /* flash_status */
+  99              		.loc 1 244 1 is_stmt 0 view .LVU21
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 7
+
+
+ 100 004e 2046     		mov	r0, r4
+ 101 0050 03B0     		add	sp, sp, #12
+ 102              	.LCFI2:
+ 103              		.cfi_remember_state
+ 104              		.cfi_def_cfa_offset 12
+ 105              		@ sp needed
+ 106 0052 30BD     		pop	{r4, r5, pc}
+ 107              	.LVL10:
+ 108              	.L3:
+ 109              	.LCFI3:
+ 110              		.cfi_restore_state
+ 219:../../../mod/flash/flash.c ****     }
+ 111              		.loc 1 219 9 view .LVU22
+ 112 0054 0424     		movs	r4, #4
+ 113              	.LVL11:
+ 219:../../../mod/flash/flash.c ****     }
+ 114              		.loc 1 219 9 view .LVU23
+ 115 0056 FAE7     		b	.L2
+ 116              	.L4:
+ 231:../../../mod/flash/flash.c ****     }
+ 117              		.loc 1 231 9 view .LVU24
+ 118 0058 0424     		movs	r4, #4
+ 119 005a F8E7     		b	.L2
+ 120              	.L7:
+ 121              		.align	2
+ 122              	.L6:
+ 123 005c 00040258 		.word	1476527104
+ 124              		.cfi_endproc
+ 125              	.LFE145:
+ 127              		.section	.text.flash_write_enable,"ax",%progbits
+ 128              		.align	1
+ 129              		.global	flash_write_enable
+ 130              		.syntax unified
+ 131              		.thumb
+ 132              		.thumb_func
+ 134              	flash_write_enable:
+ 135              	.LVL12:
+ 136              	.LFB146:
+ 245:../../../mod/flash/flash.c **** 
+ 246:../../../mod/flash/flash.c **** 
+ 247:../../../mod/flash/flash.c **** /*******************************************************************************
+ 248:../../../mod/flash/flash.c **** *                                                                              *
+ 249:../../../mod/flash/flash.c **** * PROCEDURE:                                                                   * 
+ 250:../../../mod/flash/flash.c **** * 		flash_write_enable                                                     *
+ 251:../../../mod/flash/flash.c **** *                                                                              *
+ 252:../../../mod/flash/flash.c **** * DESCRIPTION:                                                                 * 
+ 253:../../../mod/flash/flash.c **** *       Enable writing to the external flash chip                              *
+ 254:../../../mod/flash/flash.c **** *                                                                              *
+ 255:../../../mod/flash/flash.c **** *******************************************************************************/
+ 256:../../../mod/flash/flash.c **** FLASH_STATUS flash_write_enable
+ 257:../../../mod/flash/flash.c ****     (
+ 258:../../../mod/flash/flash.c ****     HFLASH_BUFFER* pflash_handle
+ 259:../../../mod/flash/flash.c ****     )
+ 260:../../../mod/flash/flash.c **** {
+ 137              		.loc 1 260 1 is_stmt 1 view -0
+ 138              		.cfi_startproc
+ 139              		@ args = 0, pretend = 0, frame = 8
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 8
+
+
+ 140              		@ frame_needed = 0, uses_anonymous_args = 0
+ 141              		.loc 1 260 1 is_stmt 0 view .LVU26
+ 142 0000 70B5     		push	{r4, r5, r6, lr}
+ 143              	.LCFI4:
+ 144              		.cfi_def_cfa_offset 16
+ 145              		.cfi_offset 4, -16
+ 146              		.cfi_offset 5, -12
+ 147              		.cfi_offset 6, -8
+ 148              		.cfi_offset 14, -4
+ 149 0002 82B0     		sub	sp, sp, #8
+ 150              	.LCFI5:
+ 151              		.cfi_def_cfa_offset 24
+ 152 0004 0446     		mov	r4, r0
+ 261:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 262:../../../mod/flash/flash.c ****  Local variables  
+ 263:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 264:../../../mod/flash/flash.c **** uint8_t hal_status;    /* Status code return by hal spi functions             */
+ 153              		.loc 1 264 1 is_stmt 1 view .LVU27
+ 265:../../../mod/flash/flash.c **** uint8_t transmit_data; /* Data to be transmitted over SPI                     */
+ 154              		.loc 1 265 1 view .LVU28
+ 266:../../../mod/flash/flash.c **** 
+ 267:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 268:../../../mod/flash/flash.c ****  Local variables  
+ 269:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 270:../../../mod/flash/flash.c **** hal_status    = HAL_OK;
+ 155              		.loc 1 270 1 view .LVU29
+ 156              	.LVL13:
+ 271:../../../mod/flash/flash.c **** transmit_data = FLASH_OP_HW_WREN;
+ 157              		.loc 1 271 1 view .LVU30
+ 158              		.loc 1 271 15 is_stmt 0 view .LVU31
+ 159 0006 0623     		movs	r3, #6
+ 160 0008 8DF80730 		strb	r3, [sp, #7]
+ 272:../../../mod/flash/flash.c **** 
+ 273:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 274:../../../mod/flash/flash.c ****  API function implementation 
+ 275:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 276:../../../mod/flash/flash.c **** 
+ 277:../../../mod/flash/flash.c **** /* Drive slave select pin low */
+ 278:../../../mod/flash/flash.c **** HAL_GPIO_WritePin(
+ 161              		.loc 1 278 1 is_stmt 1 view .LVU32
+ 162 000c 124E     		ldr	r6, .L12
+ 163 000e 0022     		movs	r2, #0
+ 164 0010 4FF48051 		mov	r1, #4096
+ 165 0014 3046     		mov	r0, r6
+ 166              	.LVL14:
+ 167              		.loc 1 278 1 is_stmt 0 view .LVU33
+ 168 0016 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 169              	.LVL15:
+ 279:../../../mod/flash/flash.c ****                   FLASH_SS_GPIO_PORT,
+ 280:../../../mod/flash/flash.c ****                   FLASH_SS_PIN      ,
+ 281:../../../mod/flash/flash.c ****                   GPIO_PIN_RESET    
+ 282:../../../mod/flash/flash.c ****                   );
+ 283:../../../mod/flash/flash.c **** 
+ 284:../../../mod/flash/flash.c **** /* Transmit WREN code to flash over SPI */
+ 285:../../../mod/flash/flash.c **** hal_status = HAL_SPI_Transmit(
+ 170              		.loc 1 285 1 is_stmt 1 view .LVU34
+ 171              		.loc 1 285 14 is_stmt 0 view .LVU35
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 9
+
+
+ 172 001a 0123     		movs	r3, #1
+ 173 001c 1A46     		mov	r2, r3
+ 174 001e 0DF10701 		add	r1, sp, #7
+ 175 0022 04F10800 		add	r0, r4, #8
+ 176 0026 FFF7FEFF 		bl	HAL_SPI_Transmit
+ 177              	.LVL16:
+ 178 002a 0546     		mov	r5, r0
+ 179              	.LVL17:
+ 286:../../../mod/flash/flash.c ****                              &( pflash_handle -> hspi ),
+ 287:../../../mod/flash/flash.c ****                              &transmit_data            ,
+ 288:../../../mod/flash/flash.c ****                              sizeof( transmit_data )   ,
+ 289:../../../mod/flash/flash.c ****                              HAL_DEFAULT_TIMEOUT
+ 290:../../../mod/flash/flash.c ****                              );
+ 291:../../../mod/flash/flash.c **** 
+ 292:../../../mod/flash/flash.c **** 
+ 293:../../../mod/flash/flash.c **** /* Drive slave select pin high */
+ 294:../../../mod/flash/flash.c **** HAL_GPIO_WritePin(
+ 180              		.loc 1 294 1 is_stmt 1 view .LVU36
+ 181 002c 0122     		movs	r2, #1
+ 182 002e 4FF48051 		mov	r1, #4096
+ 183 0032 3046     		mov	r0, r6
+ 184 0034 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 185              	.LVL18:
+ 295:../../../mod/flash/flash.c ****                   FLASH_SS_GPIO_PORT,
+ 296:../../../mod/flash/flash.c ****                   FLASH_SS_PIN      ,
+ 297:../../../mod/flash/flash.c ****                   GPIO_PIN_SET    
+ 298:../../../mod/flash/flash.c ****                   );
+ 299:../../../mod/flash/flash.c **** 
+ 300:../../../mod/flash/flash.c **** /* Set WP MCU pin to HIGH */
+ 301:../../../mod/flash/flash.c **** HAL_GPIO_WritePin( FLASH_WP_GPIO_PORT, FLASH_WP_PIN, GPIO_PIN_SET );
+ 186              		.loc 1 301 1 view .LVU37
+ 187 0038 0122     		movs	r2, #1
+ 188 003a 4FF48051 		mov	r1, #4096
+ 189 003e 0748     		ldr	r0, .L12+4
+ 190 0040 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 191              	.LVL19:
+ 302:../../../mod/flash/flash.c **** 
+ 303:../../../mod/flash/flash.c **** 
+ 304:../../../mod/flash/flash.c **** /* Set write enabled bit in flash buffer handle */
+ 305:../../../mod/flash/flash.c **** if ( hal_status != HAL_TIMEOUT )
+ 192              		.loc 1 305 1 view .LVU38
+ 193              		.loc 1 305 4 is_stmt 0 view .LVU39
+ 194 0044 032D     		cmp	r5, #3
+ 195 0046 05D0     		beq	.L10
+ 306:../../../mod/flash/flash.c **** 	{
+ 307:../../../mod/flash/flash.c **** 	pflash_handle -> write_enabled = FLASH_WP_WRITE_ENABLED;
+ 196              		.loc 1 307 2 is_stmt 1 view .LVU40
+ 197              		.loc 1 307 33 is_stmt 0 view .LVU41
+ 198 0048 0123     		movs	r3, #1
+ 199 004a 84F89030 		strb	r3, [r4, #144]
+ 308:../../../mod/flash/flash.c **** 	return FLASH_OK;
+ 200              		.loc 1 308 2 is_stmt 1 view .LVU42
+ 201              		.loc 1 308 9 is_stmt 0 view .LVU43
+ 202 004e 0020     		movs	r0, #0
+ 203              	.L9:
+ 309:../../../mod/flash/flash.c ****     }
+ 310:../../../mod/flash/flash.c **** else
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 10
+
+
+ 311:../../../mod/flash/flash.c **** 	{
+ 312:../../../mod/flash/flash.c **** 	return FLASH_TIMEOUT;
+ 313:../../../mod/flash/flash.c ****     }
+ 314:../../../mod/flash/flash.c **** 
+ 315:../../../mod/flash/flash.c **** } /* flash_write_enable */
+ 204              		.loc 1 315 1 view .LVU44
+ 205 0050 02B0     		add	sp, sp, #8
+ 206              	.LCFI6:
+ 207              		.cfi_remember_state
+ 208              		.cfi_def_cfa_offset 16
+ 209              		@ sp needed
+ 210 0052 70BD     		pop	{r4, r5, r6, pc}
+ 211              	.LVL20:
+ 212              	.L10:
+ 213              	.LCFI7:
+ 214              		.cfi_restore_state
+ 312:../../../mod/flash/flash.c ****     }
+ 215              		.loc 1 312 9 view .LVU45
+ 216 0054 0420     		movs	r0, #4
+ 217 0056 FBE7     		b	.L9
+ 218              	.L13:
+ 219              		.align	2
+ 220              	.L12:
+ 221 0058 00040258 		.word	1476527104
+ 222 005c 000C0258 		.word	1476529152
+ 223              		.cfi_endproc
+ 224              	.LFE146:
+ 226              		.section	.text.flash_write_disable,"ax",%progbits
+ 227              		.align	1
+ 228              		.global	flash_write_disable
+ 229              		.syntax unified
+ 230              		.thumb
+ 231              		.thumb_func
+ 233              	flash_write_disable:
+ 234              	.LVL21:
+ 235              	.LFB147:
+ 316:../../../mod/flash/flash.c **** 
+ 317:../../../mod/flash/flash.c **** 
+ 318:../../../mod/flash/flash.c **** /*******************************************************************************
+ 319:../../../mod/flash/flash.c **** *                                                                              *
+ 320:../../../mod/flash/flash.c **** * PROCEDURE:                                                                   * 
+ 321:../../../mod/flash/flash.c **** * 		flash_write_disable                                                    *
+ 322:../../../mod/flash/flash.c **** *                                                                              *
+ 323:../../../mod/flash/flash.c **** * DESCRIPTION:                                                                 * 
+ 324:../../../mod/flash/flash.c **** *       Disable writing to the external flash chip                             *
+ 325:../../../mod/flash/flash.c **** *                                                                              *
+ 326:../../../mod/flash/flash.c **** *******************************************************************************/
+ 327:../../../mod/flash/flash.c **** FLASH_STATUS flash_write_disable
+ 328:../../../mod/flash/flash.c ****     (
+ 329:../../../mod/flash/flash.c ****     HFLASH_BUFFER* pflash_handle
+ 330:../../../mod/flash/flash.c ****     )
+ 331:../../../mod/flash/flash.c **** {
+ 236              		.loc 1 331 1 is_stmt 1 view -0
+ 237              		.cfi_startproc
+ 238              		@ args = 0, pretend = 0, frame = 8
+ 239              		@ frame_needed = 0, uses_anonymous_args = 0
+ 240              		.loc 1 331 1 is_stmt 0 view .LVU47
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 11
+
+
+ 241 0000 70B5     		push	{r4, r5, r6, lr}
+ 242              	.LCFI8:
+ 243              		.cfi_def_cfa_offset 16
+ 244              		.cfi_offset 4, -16
+ 245              		.cfi_offset 5, -12
+ 246              		.cfi_offset 6, -8
+ 247              		.cfi_offset 14, -4
+ 248 0002 82B0     		sub	sp, sp, #8
+ 249              	.LCFI9:
+ 250              		.cfi_def_cfa_offset 24
+ 251 0004 0446     		mov	r4, r0
+ 332:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 333:../../../mod/flash/flash.c ****  Local variables  
+ 334:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 335:../../../mod/flash/flash.c **** uint8_t hal_status;    /* Status code return by hal spi functions             */
+ 252              		.loc 1 335 1 is_stmt 1 view .LVU48
+ 336:../../../mod/flash/flash.c **** uint8_t transmit_data; /* Data to be transmitted over SPI                     */
+ 253              		.loc 1 336 1 view .LVU49
+ 337:../../../mod/flash/flash.c **** 
+ 338:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 339:../../../mod/flash/flash.c ****  Local variables  
+ 340:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 341:../../../mod/flash/flash.c **** hal_status    = HAL_OK;
+ 254              		.loc 1 341 1 view .LVU50
+ 255              	.LVL22:
+ 342:../../../mod/flash/flash.c **** transmit_data = FLASH_OP_HW_WRDI;
+ 256              		.loc 1 342 1 view .LVU51
+ 257              		.loc 1 342 15 is_stmt 0 view .LVU52
+ 258 0006 0423     		movs	r3, #4
+ 259 0008 8DF80730 		strb	r3, [sp, #7]
+ 343:../../../mod/flash/flash.c **** 
+ 344:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 345:../../../mod/flash/flash.c ****  API function implementation 
+ 346:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 347:../../../mod/flash/flash.c **** 
+ 348:../../../mod/flash/flash.c **** /* Drive slave select pin low */
+ 349:../../../mod/flash/flash.c **** HAL_GPIO_WritePin(
+ 260              		.loc 1 349 1 is_stmt 1 view .LVU53
+ 261 000c 124E     		ldr	r6, .L18
+ 262 000e 0022     		movs	r2, #0
+ 263 0010 4FF48051 		mov	r1, #4096
+ 264 0014 3046     		mov	r0, r6
+ 265              	.LVL23:
+ 266              		.loc 1 349 1 is_stmt 0 view .LVU54
+ 267 0016 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 268              	.LVL24:
+ 350:../../../mod/flash/flash.c ****                   FLASH_SS_GPIO_PORT,
+ 351:../../../mod/flash/flash.c ****                   FLASH_SS_PIN      ,
+ 352:../../../mod/flash/flash.c ****                   GPIO_PIN_RESET    
+ 353:../../../mod/flash/flash.c ****                   );
+ 354:../../../mod/flash/flash.c **** 
+ 355:../../../mod/flash/flash.c **** /* Transmit WREN code to flash over SPI */
+ 356:../../../mod/flash/flash.c **** hal_status = HAL_SPI_Transmit(
+ 269              		.loc 1 356 1 is_stmt 1 view .LVU55
+ 270              		.loc 1 356 14 is_stmt 0 view .LVU56
+ 271 001a 0123     		movs	r3, #1
+ 272 001c 1A46     		mov	r2, r3
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 12
+
+
+ 273 001e 0DF10701 		add	r1, sp, #7
+ 274 0022 04F10800 		add	r0, r4, #8
+ 275 0026 FFF7FEFF 		bl	HAL_SPI_Transmit
+ 276              	.LVL25:
+ 277 002a 0546     		mov	r5, r0
+ 278              	.LVL26:
+ 357:../../../mod/flash/flash.c ****                              &( pflash_handle -> hspi ),
+ 358:../../../mod/flash/flash.c ****                              &transmit_data            ,
+ 359:../../../mod/flash/flash.c ****                              sizeof( transmit_data )   ,
+ 360:../../../mod/flash/flash.c ****                              HAL_DEFAULT_TIMEOUT
+ 361:../../../mod/flash/flash.c ****                              );
+ 362:../../../mod/flash/flash.c **** 
+ 363:../../../mod/flash/flash.c **** /* Drive slave select pin high */
+ 364:../../../mod/flash/flash.c **** HAL_GPIO_WritePin(
+ 279              		.loc 1 364 1 is_stmt 1 view .LVU57
+ 280 002c 0122     		movs	r2, #1
+ 281 002e 4FF48051 		mov	r1, #4096
+ 282 0032 3046     		mov	r0, r6
+ 283 0034 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 284              	.LVL27:
+ 365:../../../mod/flash/flash.c ****                   FLASH_SS_GPIO_PORT,
+ 366:../../../mod/flash/flash.c ****                   FLASH_SS_PIN      ,
+ 367:../../../mod/flash/flash.c ****                   GPIO_PIN_SET    
+ 368:../../../mod/flash/flash.c ****                   );
+ 369:../../../mod/flash/flash.c **** 
+ 370:../../../mod/flash/flash.c **** /* Set WP MCU pin to LOW */
+ 371:../../../mod/flash/flash.c **** HAL_GPIO_WritePin( FLASH_WP_GPIO_PORT, FLASH_WP_PIN, GPIO_PIN_RESET );
+ 285              		.loc 1 371 1 view .LVU58
+ 286 0038 0022     		movs	r2, #0
+ 287 003a 4FF48051 		mov	r1, #4096
+ 288 003e 0748     		ldr	r0, .L18+4
+ 289 0040 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 290              	.LVL28:
+ 372:../../../mod/flash/flash.c **** 
+ 373:../../../mod/flash/flash.c **** /* Reset the write enabled bit in flash buffer handle */
+ 374:../../../mod/flash/flash.c **** if ( hal_status != HAL_TIMEOUT )
+ 291              		.loc 1 374 1 view .LVU59
+ 292              		.loc 1 374 4 is_stmt 0 view .LVU60
+ 293 0044 032D     		cmp	r5, #3
+ 294 0046 04D0     		beq	.L16
+ 375:../../../mod/flash/flash.c **** 	{
+ 376:../../../mod/flash/flash.c **** 	pflash_handle -> write_enabled = FLASH_WP_READ_ONLY;
+ 295              		.loc 1 376 2 is_stmt 1 view .LVU61
+ 296              		.loc 1 376 33 is_stmt 0 view .LVU62
+ 297 0048 0020     		movs	r0, #0
+ 298 004a 84F89000 		strb	r0, [r4, #144]
+ 377:../../../mod/flash/flash.c **** 	return FLASH_OK;
+ 299              		.loc 1 377 2 is_stmt 1 view .LVU63
+ 300              	.L15:
+ 378:../../../mod/flash/flash.c ****     }
+ 379:../../../mod/flash/flash.c **** else
+ 380:../../../mod/flash/flash.c **** 	{
+ 381:../../../mod/flash/flash.c **** 	return FLASH_TIMEOUT;
+ 382:../../../mod/flash/flash.c ****     }
+ 383:../../../mod/flash/flash.c **** 
+ 384:../../../mod/flash/flash.c **** } /* flash_write_disable */
+ 301              		.loc 1 384 1 is_stmt 0 view .LVU64
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 13
+
+
+ 302 004e 02B0     		add	sp, sp, #8
+ 303              	.LCFI10:
+ 304              		.cfi_remember_state
+ 305              		.cfi_def_cfa_offset 16
+ 306              		@ sp needed
+ 307 0050 70BD     		pop	{r4, r5, r6, pc}
+ 308              	.LVL29:
+ 309              	.L16:
+ 310              	.LCFI11:
+ 311              		.cfi_restore_state
+ 381:../../../mod/flash/flash.c ****     }
+ 312              		.loc 1 381 9 view .LVU65
+ 313 0052 0420     		movs	r0, #4
+ 314 0054 FBE7     		b	.L15
+ 315              	.L19:
+ 316 0056 00BF     		.align	2
+ 317              	.L18:
+ 318 0058 00040258 		.word	1476527104
+ 319 005c 000C0258 		.word	1476529152
+ 320              		.cfi_endproc
+ 321              	.LFE147:
+ 323              		.section	.text.flash_write,"ax",%progbits
+ 324              		.align	1
+ 325              		.global	flash_write
+ 326              		.syntax unified
+ 327              		.thumb
+ 328              		.thumb_func
+ 330              	flash_write:
+ 331              	.LVL30:
+ 332              	.LFB148:
+ 385:../../../mod/flash/flash.c **** 
+ 386:../../../mod/flash/flash.c **** 
+ 387:../../../mod/flash/flash.c **** /*******************************************************************************
+ 388:../../../mod/flash/flash.c **** *                                                                              *
+ 389:../../../mod/flash/flash.c **** * PROCEDURE:                                                                   * 
+ 390:../../../mod/flash/flash.c **** * 		flash_write                                                            *
+ 391:../../../mod/flash/flash.c **** *                                                                              *
+ 392:../../../mod/flash/flash.c **** * DESCRIPTION:                                                                 * 
+ 393:../../../mod/flash/flash.c **** *       writes bytes from a flash buffer to the external flash                 *
+ 394:../../../mod/flash/flash.c **** *                                                                              *
+ 395:../../../mod/flash/flash.c **** *******************************************************************************/
+ 396:../../../mod/flash/flash.c **** FLASH_STATUS flash_write 
+ 397:../../../mod/flash/flash.c ****     (
+ 398:../../../mod/flash/flash.c **** 	HFLASH_BUFFER* pflash_handle
+ 399:../../../mod/flash/flash.c ****     )
+ 400:../../../mod/flash/flash.c **** {
+ 333              		.loc 1 400 1 is_stmt 1 view -0
+ 334              		.cfi_startproc
+ 335              		@ args = 0, pretend = 0, frame = 8
+ 336              		@ frame_needed = 0, uses_anonymous_args = 0
+ 337              		.loc 1 400 1 is_stmt 0 view .LVU67
+ 338 0000 10B5     		push	{r4, lr}
+ 339              	.LCFI12:
+ 340              		.cfi_def_cfa_offset 8
+ 341              		.cfi_offset 4, -8
+ 342              		.cfi_offset 14, -4
+ 343 0002 82B0     		sub	sp, sp, #8
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 14
+
+
+ 344              	.LCFI13:
+ 345              		.cfi_def_cfa_offset 16
+ 401:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 402:../../../mod/flash/flash.c ****  Local variables 
+ 403:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 404:../../../mod/flash/flash.c **** int8_t  hal_status;    /* Status code return by hal spi functions             */
+ 346              		.loc 1 404 1 is_stmt 1 view .LVU68
+ 405:../../../mod/flash/flash.c **** uint8_t transmit_data; /* Data to be transmitted over SPI                     */
+ 347              		.loc 1 405 1 view .LVU69
+ 406:../../../mod/flash/flash.c **** 
+ 407:../../../mod/flash/flash.c **** 
+ 408:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 409:../../../mod/flash/flash.c ****  Initializations 
+ 410:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 411:../../../mod/flash/flash.c **** transmit_data = FLASH_OP_HW_BYTE_PROGRAM;
+ 348              		.loc 1 411 1 view .LVU70
+ 349              		.loc 1 411 15 is_stmt 0 view .LVU71
+ 350 0004 0223     		movs	r3, #2
+ 351 0006 8DF80730 		strb	r3, [sp, #7]
+ 412:../../../mod/flash/flash.c **** 
+ 413:../../../mod/flash/flash.c **** 
+ 414:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 415:../../../mod/flash/flash.c ****  API function implementation
+ 416:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 417:../../../mod/flash/flash.c **** 
+ 418:../../../mod/flash/flash.c **** /* Check if write_enabled */
+ 419:../../../mod/flash/flash.c **** if(pflash_handle -> write_enabled == false)
+ 352              		.loc 1 419 1 is_stmt 1 view .LVU72
+ 353              		.loc 1 419 18 is_stmt 0 view .LVU73
+ 354 000a 90F89030 		ldrb	r3, [r0, #144]	@ zero_extendqisi2
+ 355              		.loc 1 419 3 view .LVU74
+ 356 000e 3BB3     		cbz	r3, .L22
+ 357 0010 0446     		mov	r4, r0
+ 420:../../../mod/flash/flash.c **** 	{
+ 421:../../../mod/flash/flash.c **** 	return FLASH_WRITE_PROTECTED;
+ 422:../../../mod/flash/flash.c **** 	}
+ 423:../../../mod/flash/flash.c **** 
+ 424:../../../mod/flash/flash.c **** /* Drive chip enable line low */
+ 425:../../../mod/flash/flash.c **** HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET );
+ 358              		.loc 1 425 1 is_stmt 1 view .LVU75
+ 359 0012 0022     		movs	r2, #0
+ 360 0014 4FF48051 		mov	r1, #4096
+ 361 0018 1648     		ldr	r0, .L27
+ 362              	.LVL31:
+ 363              		.loc 1 425 1 is_stmt 0 view .LVU76
+ 364 001a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 365              	.LVL32:
+ 426:../../../mod/flash/flash.c **** 
+ 427:../../../mod/flash/flash.c **** /* Send command code  */
+ 428:../../../mod/flash/flash.c **** hal_status = HAL_SPI_Transmit(
+ 366              		.loc 1 428 1 is_stmt 1 view .LVU77
+ 367              		.loc 1 428 14 is_stmt 0 view .LVU78
+ 368 001e 0123     		movs	r3, #1
+ 369 0020 1A46     		mov	r2, r3
+ 370 0022 0DF10701 		add	r1, sp, #7
+ 371 0026 1448     		ldr	r0, .L27+4
+ 372 0028 FFF7FEFF 		bl	HAL_SPI_Transmit
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 15
+
+
+ 373              	.LVL33:
+ 429:../../../mod/flash/flash.c **** 							  &hspi2                 ,
+ 430:../../../mod/flash/flash.c **** 							  &transmit_data         ,
+ 431:../../../mod/flash/flash.c **** 							  sizeof( transmit_data ),
+ 432:../../../mod/flash/flash.c **** 							  HAL_DEFAULT_TIMEOUT
+ 433:../../../mod/flash/flash.c **** 							 );
+ 434:../../../mod/flash/flash.c **** 
+ 435:../../../mod/flash/flash.c **** if ( hal_status == HAL_TIMEOUT )
+ 374              		.loc 1 435 1 is_stmt 1 view .LVU79
+ 375              		.loc 1 435 4 is_stmt 0 view .LVU80
+ 376 002c 0328     		cmp	r0, #3
+ 377 002e 1AD0     		beq	.L23
+ 436:../../../mod/flash/flash.c **** 	{
+ 437:../../../mod/flash/flash.c **** 	return FLASH_TIMEOUT;
+ 438:../../../mod/flash/flash.c **** 	}
+ 439:../../../mod/flash/flash.c **** 
+ 440:../../../mod/flash/flash.c **** /* Send address bytes */
+ 441:../../../mod/flash/flash.c **** hal_status = HAL_SPI_Transmit(
+ 378              		.loc 1 441 1 is_stmt 1 view .LVU81
+ 379              		.loc 1 441 14 is_stmt 0 view .LVU82
+ 380 0030 0123     		movs	r3, #1
+ 381 0032 0322     		movs	r2, #3
+ 382 0034 E118     		adds	r1, r4, r3
+ 383 0036 1048     		ldr	r0, .L27+4
+ 384              	.LVL34:
+ 385              		.loc 1 441 14 view .LVU83
+ 386 0038 FFF7FEFF 		bl	HAL_SPI_Transmit
+ 387              	.LVL35:
+ 442:../../../mod/flash/flash.c **** 							  &hspi2                            ,
+ 443:../../../mod/flash/flash.c **** 							  &( pflash_handle -> address[0] )  ,
+ 444:../../../mod/flash/flash.c **** 							  sizeof( pflash_handle -> address ),
+ 445:../../../mod/flash/flash.c **** 							  HAL_DEFAULT_TIMEOUT
+ 446:../../../mod/flash/flash.c **** 							 );
+ 447:../../../mod/flash/flash.c **** 
+ 448:../../../mod/flash/flash.c **** if ( hal_status == HAL_TIMEOUT )
+ 388              		.loc 1 448 1 is_stmt 1 view .LVU84
+ 389              		.loc 1 448 4 is_stmt 0 view .LVU85
+ 390 003c 0328     		cmp	r0, #3
+ 391 003e 14D0     		beq	.L24
+ 449:../../../mod/flash/flash.c **** 	{
+ 450:../../../mod/flash/flash.c **** 	return FLASH_TIMEOUT;
+ 451:../../../mod/flash/flash.c **** 	}
+ 452:../../../mod/flash/flash.c **** 
+ 453:../../../mod/flash/flash.c **** /* Write bytes */
+ 454:../../../mod/flash/flash.c **** hal_status = HAL_SPI_Transmit(
+ 392              		.loc 1 454 1 is_stmt 1 view .LVU86
+ 393              		.loc 1 454 14 is_stmt 0 view .LVU87
+ 394 0040 0623     		movs	r3, #6
+ 395 0042 2278     		ldrb	r2, [r4]	@ zero_extendqisi2
+ 396 0044 6168     		ldr	r1, [r4, #4]
+ 397 0046 0C48     		ldr	r0, .L27+4
+ 398              	.LVL36:
+ 399              		.loc 1 454 14 view .LVU88
+ 400 0048 FFF7FEFF 		bl	HAL_SPI_Transmit
+ 401              	.LVL37:
+ 455:../../../mod/flash/flash.c **** 							  &hspi2                    ,
+ 456:../../../mod/flash/flash.c **** 							  pflash_handle -> pbuffer  ,
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 16
+
+
+ 457:../../../mod/flash/flash.c **** 							  pflash_handle -> num_bytes,
+ 458:../../../mod/flash/flash.c **** 							  FLASH_WRITE_TIMEOUT
+ 459:../../../mod/flash/flash.c **** 							 );
+ 460:../../../mod/flash/flash.c **** 
+ 461:../../../mod/flash/flash.c **** if ( hal_status == HAL_TIMEOUT )
+ 402              		.loc 1 461 1 is_stmt 1 view .LVU89
+ 403              		.loc 1 461 4 is_stmt 0 view .LVU90
+ 404 004c 0328     		cmp	r0, #3
+ 405 004e 0ED0     		beq	.L25
+ 462:../../../mod/flash/flash.c **** 	{
+ 463:../../../mod/flash/flash.c **** 	return FLASH_TIMEOUT;
+ 464:../../../mod/flash/flash.c **** 	}
+ 465:../../../mod/flash/flash.c **** 
+ 466:../../../mod/flash/flash.c **** /* Drive chip enable line high */
+ 467:../../../mod/flash/flash.c **** HAL_GPIO_WritePin(FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_SET);
+ 406              		.loc 1 467 1 is_stmt 1 view .LVU91
+ 407 0050 0122     		movs	r2, #1
+ 408 0052 4FF48051 		mov	r1, #4096
+ 409 0056 0748     		ldr	r0, .L27
+ 410              	.LVL38:
+ 411              		.loc 1 467 1 is_stmt 0 view .LVU92
+ 412 0058 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 413              	.LVL39:
+ 468:../../../mod/flash/flash.c **** 
+ 469:../../../mod/flash/flash.c **** return FLASH_OK;
+ 414              		.loc 1 469 1 is_stmt 1 view .LVU93
+ 415              		.loc 1 469 8 is_stmt 0 view .LVU94
+ 416 005c 0020     		movs	r0, #0
+ 417 005e 00E0     		b	.L21
+ 418              	.LVL40:
+ 419              	.L22:
+ 421:../../../mod/flash/flash.c **** 	}
+ 420              		.loc 1 421 9 view .LVU95
+ 421 0060 0520     		movs	r0, #5
+ 422              	.LVL41:
+ 423              	.L21:
+ 470:../../../mod/flash/flash.c **** 
+ 471:../../../mod/flash/flash.c **** } /* flash_write */
+ 424              		.loc 1 471 1 view .LVU96
+ 425 0062 02B0     		add	sp, sp, #8
+ 426              	.LCFI14:
+ 427              		.cfi_remember_state
+ 428              		.cfi_def_cfa_offset 8
+ 429              		@ sp needed
+ 430 0064 10BD     		pop	{r4, pc}
+ 431              	.LVL42:
+ 432              	.L23:
+ 433              	.LCFI15:
+ 434              		.cfi_restore_state
+ 437:../../../mod/flash/flash.c **** 	}
+ 435              		.loc 1 437 9 view .LVU97
+ 436 0066 0420     		movs	r0, #4
+ 437              	.LVL43:
+ 437:../../../mod/flash/flash.c **** 	}
+ 438              		.loc 1 437 9 view .LVU98
+ 439 0068 FBE7     		b	.L21
+ 440              	.LVL44:
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 17
+
+
+ 441              	.L24:
+ 450:../../../mod/flash/flash.c **** 	}
+ 442              		.loc 1 450 9 view .LVU99
+ 443 006a 0420     		movs	r0, #4
+ 444              	.LVL45:
+ 450:../../../mod/flash/flash.c **** 	}
+ 445              		.loc 1 450 9 view .LVU100
+ 446 006c F9E7     		b	.L21
+ 447              	.LVL46:
+ 448              	.L25:
+ 463:../../../mod/flash/flash.c **** 	}
+ 449              		.loc 1 463 9 view .LVU101
+ 450 006e 0420     		movs	r0, #4
+ 451              	.LVL47:
+ 463:../../../mod/flash/flash.c **** 	}
+ 452              		.loc 1 463 9 view .LVU102
+ 453 0070 F7E7     		b	.L21
+ 454              	.L28:
+ 455 0072 00BF     		.align	2
+ 456              	.L27:
+ 457 0074 00040258 		.word	1476527104
+ 458 0078 00000000 		.word	hspi2
+ 459              		.cfi_endproc
+ 460              	.LFE148:
+ 462              		.section	.text.flash_cmd_execute,"ax",%progbits
+ 463              		.align	1
+ 464              		.global	flash_cmd_execute
+ 465              		.syntax unified
+ 466              		.thumb
+ 467              		.thumb_func
+ 469              	flash_cmd_execute:
+ 470              	.LVL48:
+ 471              	.LFB144:
+  53:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 472              		.loc 1 53 1 is_stmt 1 view -0
+ 473              		.cfi_startproc
+ 474              		@ args = 0, pretend = 0, frame = 0
+ 475              		@ frame_needed = 0, uses_anonymous_args = 0
+  53:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 476              		.loc 1 53 1 is_stmt 0 view .LVU104
+ 477 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 478              	.LCFI16:
+ 479              		.cfi_def_cfa_offset 24
+ 480              		.cfi_offset 4, -24
+ 481              		.cfi_offset 5, -20
+ 482              		.cfi_offset 6, -16
+ 483              		.cfi_offset 7, -12
+ 484              		.cfi_offset 8, -8
+ 485              		.cfi_offset 14, -4
+ 486 0004 0F46     		mov	r7, r1
+ 487 0006 9046     		mov	r8, r2
+  57:../../../mod/flash/flash.c **** uint8_t          num_bytes;                 /* Number of bytes on which to 
+ 488              		.loc 1 57 1 is_stmt 1 view .LVU105
+  58:../../../mod/flash/flash.c ****                                                operate                        */
+ 489              		.loc 1 58 1 view .LVU106
+  60:../../../mod/flash/flash.c **** 
+ 490              		.loc 1 60 1 view .LVU107
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 18
+
+
+  65:../../../mod/flash/flash.c **** num_bytes = ( subcommand & FLASH_NBYTES_BITMASK    ); 
+ 491              		.loc 1 65 1 view .LVU108
+  65:../../../mod/flash/flash.c **** num_bytes = ( subcommand & FLASH_NBYTES_BITMASK    ); 
+ 492              		.loc 1 65 11 is_stmt 0 view .LVU109
+ 493 0008 4509     		lsrs	r5, r0, #5
+ 494              	.LVL49:
+  66:../../../mod/flash/flash.c **** 
+ 495              		.loc 1 66 1 is_stmt 1 view .LVU110
+  71:../../../mod/flash/flash.c **** 	{
+ 496              		.loc 1 71 1 view .LVU111
+ 497 000a 072D     		cmp	r5, #7
+ 498 000c 3FD8     		bhi	.L39
+ 499 000e DFE805F0 		tbb	[pc, r5]
+ 500              	.L32:
+ 501 0012 04       		.byte	(.L33-.L32)/2
+ 502 0013 3E       		.byte	(.L39-.L32)/2
+ 503 0014 08       		.byte	(.L36-.L32)/2
+ 504 0015 0D       		.byte	(.L35-.L32)/2
+ 505 0016 12       		.byte	(.L34-.L32)/2
+ 506 0017 04       		.byte	(.L33-.L32)/2
+ 507 0018 3E       		.byte	(.L39-.L32)/2
+ 508 0019 2F       		.byte	(.L31-.L32)/2
+ 509              		.p2align 1
+ 510              	.L33:
+ 511 001a 0225     		movs	r5, #2
+ 512              	.LVL50:
+ 513              	.L30:
+ 170:../../../mod/flash/flash.c **** 
+ 514              		.loc 1 170 1 is_stmt 0 view .LVU112
+ 515 001c 2846     		mov	r0, r5
+ 516 001e BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 517              	.LVL51:
+ 518              	.L36:
+  82:../../../mod/flash/flash.c **** 		return status;
+ 519              		.loc 1 82 3 is_stmt 1 view .LVU113
+  82:../../../mod/flash/flash.c **** 		return status;
+ 520              		.loc 1 82 12 is_stmt 0 view .LVU114
+ 521 0022 0846     		mov	r0, r1
+ 522              	.LVL52:
+  82:../../../mod/flash/flash.c **** 		return status;
+ 523              		.loc 1 82 12 view .LVU115
+ 524 0024 FFF7FEFF 		bl	flash_write_enable
+ 525              	.LVL53:
+  82:../../../mod/flash/flash.c **** 		return status;
+ 526              		.loc 1 82 12 view .LVU116
+ 527 0028 0546     		mov	r5, r0
+ 528              	.LVL54:
+  83:../../../mod/flash/flash.c ****         }
+ 529              		.loc 1 83 3 is_stmt 1 view .LVU117
+  83:../../../mod/flash/flash.c ****         }
+ 530              		.loc 1 83 10 is_stmt 0 view .LVU118
+ 531 002a F7E7     		b	.L30
+ 532              	.LVL55:
+ 533              	.L35:
+  89:../../../mod/flash/flash.c **** 		return status;
+ 534              		.loc 1 89 3 is_stmt 1 view .LVU119
+  89:../../../mod/flash/flash.c **** 		return status;
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 19
+
+
+ 535              		.loc 1 89 12 is_stmt 0 view .LVU120
+ 536 002c 0846     		mov	r0, r1
+ 537              	.LVL56:
+  89:../../../mod/flash/flash.c **** 		return status;
+ 538              		.loc 1 89 12 view .LVU121
+ 539 002e FFF7FEFF 		bl	flash_write_disable
+ 540              	.LVL57:
+  89:../../../mod/flash/flash.c **** 		return status;
+ 541              		.loc 1 89 12 view .LVU122
+ 542 0032 0546     		mov	r5, r0
+ 543              	.LVL58:
+  90:../../../mod/flash/flash.c ****         }
+ 544              		.loc 1 90 3 is_stmt 1 view .LVU123
+  90:../../../mod/flash/flash.c ****         }
+ 545              		.loc 1 90 10 is_stmt 0 view .LVU124
+ 546 0034 F2E7     		b	.L30
+ 547              	.LVL59:
+ 548              	.L34:
+  90:../../../mod/flash/flash.c ****         }
+ 549              		.loc 1 90 10 view .LVU125
+ 550 0036 00F01F04 		and	r4, r0, #31
+  97:../../../mod/flash/flash.c ****                                  huart                             , 
+ 551              		.loc 1 97 3 is_stmt 1 view .LVU126
+  97:../../../mod/flash/flash.c ****                                  huart                             , 
+ 552              		.loc 1 97 12 is_stmt 0 view .LVU127
+ 553 003a 0123     		movs	r3, #1
+ 554 003c 0322     		movs	r2, #3
+ 555              	.LVL60:
+  97:../../../mod/flash/flash.c ****                                  huart                             , 
+ 556              		.loc 1 97 12 view .LVU128
+ 557 003e 1944     		add	r1, r1, r3
+ 558              	.LVL61:
+  97:../../../mod/flash/flash.c ****                                  huart                             , 
+ 559              		.loc 1 97 12 view .LVU129
+ 560 0040 4046     		mov	r0, r8
+ 561              	.LVL62:
+  97:../../../mod/flash/flash.c ****                                  huart                             , 
+ 562              		.loc 1 97 12 view .LVU130
+ 563 0042 FFF7FEFF 		bl	HAL_UART_Receive
+ 564              	.LVL63:
+ 103:../../../mod/flash/flash.c **** 			{
+ 565              		.loc 1 103 3 is_stmt 1 view .LVU131
+ 103:../../../mod/flash/flash.c **** 			{
+ 566              		.loc 1 103 6 is_stmt 0 view .LVU132
+ 567 0046 0328     		cmp	r0, #3
+ 568 0048 E8D0     		beq	.L30
+ 569              	.LBB2:
+ 106:../../../mod/flash/flash.c **** 				{
+ 570              		.loc 1 106 13 view .LVU133
+ 571 004a 0026     		movs	r6, #0
+ 572              	.L37:
+ 573              	.LVL64:
+ 106:../../../mod/flash/flash.c **** 				{
+ 574              		.loc 1 106 20 is_stmt 1 discriminator 1 view .LVU134
+ 106:../../../mod/flash/flash.c **** 				{
+ 575              		.loc 1 106 4 is_stmt 0 discriminator 1 view .LVU135
+ 576 004c B442     		cmp	r4, r6
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 20
+
+
+ 577 004e 0ADD     		ble	.L42
+ 578              	.LBB3:
+ 108:../../../mod/flash/flash.c **** 				status = HAL_UART_Receive(
+ 579              		.loc 1 108 5 is_stmt 1 view .LVU136
+ 108:../../../mod/flash/flash.c **** 				status = HAL_UART_Receive(
+ 580              		.loc 1 108 40 is_stmt 0 view .LVU137
+ 581 0050 7968     		ldr	r1, [r7, #4]
+ 582              	.LVL65:
+ 109:../../../mod/flash/flash.c ****                                          huart              , 
+ 583              		.loc 1 109 5 is_stmt 1 view .LVU138
+ 109:../../../mod/flash/flash.c ****                                          huart              , 
+ 584              		.loc 1 109 14 is_stmt 0 view .LVU139
+ 585 0052 0123     		movs	r3, #1
+ 586 0054 1A46     		mov	r2, r3
+ 587 0056 3144     		add	r1, r1, r6
+ 588              	.LVL66:
+ 109:../../../mod/flash/flash.c ****                                          huart              , 
+ 589              		.loc 1 109 14 view .LVU140
+ 590 0058 4046     		mov	r0, r8
+ 591              	.LVL67:
+ 109:../../../mod/flash/flash.c ****                                          huart              , 
+ 592              		.loc 1 109 14 view .LVU141
+ 593 005a FFF7FEFF 		bl	HAL_UART_Receive
+ 594              	.LVL68:
+ 115:../../../mod/flash/flash.c **** 					{
+ 595              		.loc 1 115 5 is_stmt 1 view .LVU142
+ 115:../../../mod/flash/flash.c **** 					{
+ 596              		.loc 1 115 8 is_stmt 0 view .LVU143
+ 597 005e 0328     		cmp	r0, #3
+ 598 0060 DCD0     		beq	.L30
+ 123:../../../mod/flash/flash.c **** 				}
+ 599              		.loc 1 123 21 is_stmt 1 discriminator 2 view .LVU144
+ 600              	.LBE3:
+ 106:../../../mod/flash/flash.c **** 				{
+ 601              		.loc 1 106 35 discriminator 2 view .LVU145
+ 602 0062 0136     		adds	r6, r6, #1
+ 603              	.LVL69:
+ 106:../../../mod/flash/flash.c **** 				{
+ 604              		.loc 1 106 35 is_stmt 0 discriminator 2 view .LVU146
+ 605 0064 F2E7     		b	.L37
+ 606              	.L42:
+ 106:../../../mod/flash/flash.c **** 				{
+ 607              		.loc 1 106 35 discriminator 2 view .LVU147
+ 608              	.LBE2:
+ 133:../../../mod/flash/flash.c **** 
+ 609              		.loc 1 133 3 is_stmt 1 view .LVU148
+ 610 0066 3846     		mov	r0, r7
+ 611              	.LVL70:
+ 133:../../../mod/flash/flash.c **** 
+ 612              		.loc 1 133 3 is_stmt 0 view .LVU149
+ 613 0068 FFF7FEFF 		bl	flash_write
+ 614              	.LVL71:
+ 135:../../../mod/flash/flash.c ****         }
+ 615              		.loc 1 135 6 is_stmt 1 view .LVU150
+ 135:../../../mod/flash/flash.c ****         }
+ 616              		.loc 1 135 13 is_stmt 0 view .LVU151
+ 617 006c 0025     		movs	r5, #0
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 21
+
+
+ 618              	.LVL72:
+ 135:../../../mod/flash/flash.c ****         }
+ 619              		.loc 1 135 13 view .LVU152
+ 620 006e D5E7     		b	.L30
+ 621              	.LVL73:
+ 622              	.L31:
+ 148:../../../mod/flash/flash.c **** 		if ( status == FLASH_TIMEOUT )
+ 623              		.loc 1 148 3 is_stmt 1 view .LVU153
+ 148:../../../mod/flash/flash.c **** 		if ( status == FLASH_TIMEOUT )
+ 624              		.loc 1 148 12 is_stmt 0 view .LVU154
+ 625 0070 0846     		mov	r0, r1
+ 626              	.LVL74:
+ 148:../../../mod/flash/flash.c **** 		if ( status == FLASH_TIMEOUT )
+ 627              		.loc 1 148 12 view .LVU155
+ 628 0072 FFF7FEFF 		bl	flash_status
+ 629              	.LVL75:
+ 148:../../../mod/flash/flash.c **** 		if ( status == FLASH_TIMEOUT )
+ 630              		.loc 1 148 12 view .LVU156
+ 631 0076 0546     		mov	r5, r0
+ 632              	.LVL76:
+ 149:../../../mod/flash/flash.c **** 			{
+ 633              		.loc 1 149 3 is_stmt 1 view .LVU157
+ 149:../../../mod/flash/flash.c **** 			{
+ 634              		.loc 1 149 6 is_stmt 0 view .LVU158
+ 635 0078 0428     		cmp	r0, #4
+ 636 007a CFD0     		beq	.L30
+ 155:../../../mod/flash/flash.c ****                          huart                                     , 
+ 637              		.loc 1 155 3 is_stmt 1 view .LVU159
+ 638 007c 0123     		movs	r3, #1
+ 639 007e 1A46     		mov	r2, r3
+ 640 0080 07F19101 		add	r1, r7, #145
+ 641 0084 4046     		mov	r0, r8
+ 642              	.LVL77:
+ 155:../../../mod/flash/flash.c ****                          huart                                     , 
+ 643              		.loc 1 155 3 is_stmt 0 view .LVU160
+ 644 0086 FFF7FEFF 		bl	HAL_UART_Transmit
+ 645              	.LVL78:
+ 161:../../../mod/flash/flash.c ****         }
+ 646              		.loc 1 161 6 is_stmt 1 view .LVU161
+ 161:../../../mod/flash/flash.c ****         }
+ 647              		.loc 1 161 13 is_stmt 0 view .LVU162
+ 648 008a 0025     		movs	r5, #0
+ 649 008c C6E7     		b	.L30
+ 650              	.LVL79:
+ 651              	.L39:
+ 167:../../../mod/flash/flash.c ****         }
+ 652              		.loc 1 167 13 view .LVU163
+ 653 008e 0325     		movs	r5, #3
+ 654              	.LVL80:
+ 167:../../../mod/flash/flash.c ****         }
+ 655              		.loc 1 167 13 view .LVU164
+ 656 0090 C4E7     		b	.L30
+ 657              		.cfi_endproc
+ 658              	.LFE144:
+ 660              		.section	.text.flash_read,"ax",%progbits
+ 661              		.align	1
+ 662              		.global	flash_read
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 22
+
+
+ 663              		.syntax unified
+ 664              		.thumb
+ 665              		.thumb_func
+ 667              	flash_read:
+ 668              	.LVL81:
+ 669              	.LFB149:
+ 472:../../../mod/flash/flash.c **** 
+ 473:../../../mod/flash/flash.c **** 
+ 474:../../../mod/flash/flash.c **** /*******************************************************************************
+ 475:../../../mod/flash/flash.c **** *                                                                              *
+ 476:../../../mod/flash/flash.c **** * PROCEDURE:                                                                   * 
+ 477:../../../mod/flash/flash.c **** * 		flash_read                                                             *
+ 478:../../../mod/flash/flash.c **** *                                                                              *
+ 479:../../../mod/flash/flash.c **** * DESCRIPTION:                                                                 * 
+ 480:../../../mod/flash/flash.c **** *       reads a specified number of bytes using a flash buffer                 *
+ 481:../../../mod/flash/flash.c **** *                                                                              *
+ 482:../../../mod/flash/flash.c **** *******************************************************************************/
+ 483:../../../mod/flash/flash.c **** FLASH_STATUS flash_read
+ 484:../../../mod/flash/flash.c ****     (
+ 485:../../../mod/flash/flash.c **** 	HFLASH_BUFFER* pflash_handle,
+ 486:../../../mod/flash/flash.c ****     uint8_t        num_bytes
+ 487:../../../mod/flash/flash.c ****     )
+ 488:../../../mod/flash/flash.c **** {
+ 670              		.loc 1 488 1 is_stmt 1 view -0
+ 671              		.cfi_startproc
+ 672              		@ args = 0, pretend = 0, frame = 8
+ 673              		@ frame_needed = 0, uses_anonymous_args = 0
+ 674              		.loc 1 488 1 is_stmt 0 view .LVU166
+ 675 0000 70B5     		push	{r4, r5, r6, lr}
+ 676              	.LCFI17:
+ 677              		.cfi_def_cfa_offset 16
+ 678              		.cfi_offset 4, -16
+ 679              		.cfi_offset 5, -12
+ 680              		.cfi_offset 6, -8
+ 681              		.cfi_offset 14, -4
+ 682 0002 82B0     		sub	sp, sp, #8
+ 683              	.LCFI18:
+ 684              		.cfi_def_cfa_offset 24
+ 685 0004 0546     		mov	r5, r0
+ 686 0006 0E46     		mov	r6, r1
+ 489:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 490:../../../mod/flash/flash.c ****  Local variables 
+ 491:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 492:../../../mod/flash/flash.c **** int8_t  hal_status;    /* Status code return by hal spi functions              */
+ 687              		.loc 1 492 1 is_stmt 1 view .LVU167
+ 493:../../../mod/flash/flash.c **** uint8_t transmit_data; /* Data to be transmitted over SPI                      */
+ 688              		.loc 1 493 1 view .LVU168
+ 494:../../../mod/flash/flash.c **** 
+ 495:../../../mod/flash/flash.c **** 
+ 496:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 497:../../../mod/flash/flash.c ****  Initializations 
+ 498:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 499:../../../mod/flash/flash.c **** transmit_data = FLASH_OP_HW_READ;
+ 689              		.loc 1 499 1 view .LVU169
+ 690              		.loc 1 499 15 is_stmt 0 view .LVU170
+ 691 0008 0323     		movs	r3, #3
+ 692 000a 8DF80730 		strb	r3, [sp, #7]
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 23
+
+
+ 500:../../../mod/flash/flash.c **** 
+ 501:../../../mod/flash/flash.c **** 
+ 502:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 503:../../../mod/flash/flash.c ****  API function implementation
+ 504:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 505:../../../mod/flash/flash.c **** 
+ 506:../../../mod/flash/flash.c **** /* Drive chip enable line low */
+ 507:../../../mod/flash/flash.c **** HAL_GPIO_WritePin(FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET);
+ 693              		.loc 1 507 1 is_stmt 1 view .LVU171
+ 694 000e 0022     		movs	r2, #0
+ 695 0010 4FF48051 		mov	r1, #4096
+ 696              	.LVL82:
+ 697              		.loc 1 507 1 is_stmt 0 view .LVU172
+ 698 0014 1848     		ldr	r0, .L52
+ 699              	.LVL83:
+ 700              		.loc 1 507 1 view .LVU173
+ 701 0016 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 702              	.LVL84:
+ 508:../../../mod/flash/flash.c **** 
+ 509:../../../mod/flash/flash.c **** /* Send command code*/
+ 510:../../../mod/flash/flash.c **** hal_status = HAL_SPI_Transmit(
+ 703              		.loc 1 510 1 is_stmt 1 view .LVU174
+ 704              		.loc 1 510 14 is_stmt 0 view .LVU175
+ 705 001a 0123     		movs	r3, #1
+ 706 001c 1A46     		mov	r2, r3
+ 707 001e 0DF10701 		add	r1, sp, #7
+ 708 0022 1648     		ldr	r0, .L52+4
+ 709 0024 FFF7FEFF 		bl	HAL_SPI_Transmit
+ 710              	.LVL85:
+ 511:../../../mod/flash/flash.c **** 							  &hspi2                 ,
+ 512:../../../mod/flash/flash.c **** 							  &transmit_data         ,
+ 513:../../../mod/flash/flash.c **** 							  sizeof( transmit_data ),
+ 514:../../../mod/flash/flash.c **** 							  HAL_DEFAULT_TIMEOUT
+ 515:../../../mod/flash/flash.c **** 							 );
+ 516:../../../mod/flash/flash.c **** 
+ 517:../../../mod/flash/flash.c **** if ( hal_status == HAL_TIMEOUT )
+ 711              		.loc 1 517 1 is_stmt 1 view .LVU176
+ 712              		.loc 1 517 4 is_stmt 0 view .LVU177
+ 713 0028 0328     		cmp	r0, #3
+ 714 002a 1ED0     		beq	.L47
+ 518:../../../mod/flash/flash.c **** 	{   
+ 519:../../../mod/flash/flash.c **** 	return FLASH_TIMEOUT;
+ 520:../../../mod/flash/flash.c **** 	}
+ 521:../../../mod/flash/flash.c **** 
+ 522:../../../mod/flash/flash.c **** /* Send Address*/
+ 523:../../../mod/flash/flash.c **** hal_status = HAL_SPI_Transmit(
+ 715              		.loc 1 523 1 is_stmt 1 view .LVU178
+ 716              		.loc 1 523 14 is_stmt 0 view .LVU179
+ 717 002c 0123     		movs	r3, #1
+ 718 002e 0322     		movs	r2, #3
+ 719 0030 E918     		adds	r1, r5, r3
+ 720 0032 1248     		ldr	r0, .L52+4
+ 721              	.LVL86:
+ 722              		.loc 1 523 14 view .LVU180
+ 723 0034 FFF7FEFF 		bl	HAL_SPI_Transmit
+ 724              	.LVL87:
+ 524:../../../mod/flash/flash.c **** 							  &hspi2                           ,
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 24
+
+
+ 525:../../../mod/flash/flash.c **** 							  &( pflash_handle -> address[0] ) ,
+ 526:../../../mod/flash/flash.c **** 							  sizeof( pflash_handle -> address ),
+ 527:../../../mod/flash/flash.c **** 							  HAL_DEFAULT_TIMEOUT
+ 528:../../../mod/flash/flash.c **** 							 );
+ 529:../../../mod/flash/flash.c **** 
+ 530:../../../mod/flash/flash.c **** if ( hal_status == HAL_TIMEOUT )
+ 725              		.loc 1 530 1 is_stmt 1 view .LVU181
+ 726              		.loc 1 530 4 is_stmt 0 view .LVU182
+ 727 0038 0328     		cmp	r0, #3
+ 728 003a 18D0     		beq	.L48
+ 729              	.LBB4:
+ 531:../../../mod/flash/flash.c **** 	{   
+ 532:../../../mod/flash/flash.c **** 	return FLASH_TIMEOUT;
+ 533:../../../mod/flash/flash.c **** 	}
+ 534:../../../mod/flash/flash.c **** 
+ 535:../../../mod/flash/flash.c **** /* Recieve output into buffer*/
+ 536:../../../mod/flash/flash.c **** for ( int i = 0; i < num_bytes; ++i )
+ 730              		.loc 1 536 11 view .LVU183
+ 731 003c 0024     		movs	r4, #0
+ 732              	.L45:
+ 733              	.LVL88:
+ 734              		.loc 1 536 18 is_stmt 1 discriminator 1 view .LVU184
+ 735              		.loc 1 536 1 is_stmt 0 discriminator 1 view .LVU185
+ 736 003e A642     		cmp	r6, r4
+ 737 0040 0ADD     		ble	.L51
+ 738              	.LBB5:
+ 537:../../../mod/flash/flash.c **** 	{
+ 538:../../../mod/flash/flash.c **** 	uint8_t* pbuffer = ( pflash_handle -> pbuffer ) + i;
+ 739              		.loc 1 538 2 is_stmt 1 view .LVU186
+ 740              		.loc 1 538 37 is_stmt 0 view .LVU187
+ 741 0042 6968     		ldr	r1, [r5, #4]
+ 742              	.LVL89:
+ 539:../../../mod/flash/flash.c **** 	hal_status = HAL_SPI_Receive(
+ 743              		.loc 1 539 2 is_stmt 1 view .LVU188
+ 744              		.loc 1 539 15 is_stmt 0 view .LVU189
+ 745 0044 0123     		movs	r3, #1
+ 746 0046 1A46     		mov	r2, r3
+ 747 0048 2144     		add	r1, r1, r4
+ 748              	.LVL90:
+ 749              		.loc 1 539 15 view .LVU190
+ 750 004a 0C48     		ldr	r0, .L52+4
+ 751              	.LVL91:
+ 752              		.loc 1 539 15 view .LVU191
+ 753 004c FFF7FEFF 		bl	HAL_SPI_Receive
+ 754              	.LVL92:
+ 540:../../../mod/flash/flash.c **** 								 &hspi2              ,
+ 541:../../../mod/flash/flash.c **** 								 pbuffer             ,
+ 542:../../../mod/flash/flash.c **** 								 sizeof( uint8_t )   ,
+ 543:../../../mod/flash/flash.c **** 								 HAL_DEFAULT_TIMEOUT
+ 544:../../../mod/flash/flash.c **** 								);
+ 545:../../../mod/flash/flash.c **** 
+ 546:../../../mod/flash/flash.c **** 	if ( hal_status == HAL_TIMEOUT )
+ 755              		.loc 1 546 2 is_stmt 1 view .LVU192
+ 756              		.loc 1 546 5 is_stmt 0 view .LVU193
+ 757 0050 0328     		cmp	r0, #3
+ 758 0052 0ED0     		beq	.L49
+ 759              	.LBE5:
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 25
+
+
+ 536:../../../mod/flash/flash.c **** 	{
+ 760              		.loc 1 536 33 is_stmt 1 discriminator 2 view .LVU194
+ 761 0054 0134     		adds	r4, r4, #1
+ 762              	.LVL93:
+ 536:../../../mod/flash/flash.c **** 	{
+ 763              		.loc 1 536 33 is_stmt 0 discriminator 2 view .LVU195
+ 764 0056 F2E7     		b	.L45
+ 765              	.L51:
+ 536:../../../mod/flash/flash.c **** 	{
+ 766              		.loc 1 536 33 discriminator 2 view .LVU196
+ 767              	.LBE4:
+ 547:../../../mod/flash/flash.c **** 		{
+ 548:../../../mod/flash/flash.c **** 		return FLASH_TIMEOUT;
+ 549:../../../mod/flash/flash.c **** 		}
+ 550:../../../mod/flash/flash.c **** 	}
+ 551:../../../mod/flash/flash.c **** 
+ 552:../../../mod/flash/flash.c **** /* Drive chip enable line high */
+ 553:../../../mod/flash/flash.c **** HAL_GPIO_WritePin(FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_SET);
+ 768              		.loc 1 553 1 is_stmt 1 view .LVU197
+ 769 0058 0122     		movs	r2, #1
+ 770 005a 4FF48051 		mov	r1, #4096
+ 771 005e 0648     		ldr	r0, .L52
+ 772              	.LVL94:
+ 773              		.loc 1 553 1 is_stmt 0 view .LVU198
+ 774 0060 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 775              	.LVL95:
+ 554:../../../mod/flash/flash.c **** 
+ 555:../../../mod/flash/flash.c **** return FLASH_OK;
+ 776              		.loc 1 555 1 is_stmt 1 view .LVU199
+ 777              		.loc 1 555 8 is_stmt 0 view .LVU200
+ 778 0064 0020     		movs	r0, #0
+ 779              	.LVL96:
+ 780              	.L44:
+ 556:../../../mod/flash/flash.c **** 
+ 557:../../../mod/flash/flash.c **** } /* flash_read */
+ 781              		.loc 1 557 1 view .LVU201
+ 782 0066 02B0     		add	sp, sp, #8
+ 783              	.LCFI19:
+ 784              		.cfi_remember_state
+ 785              		.cfi_def_cfa_offset 16
+ 786              		@ sp needed
+ 787 0068 70BD     		pop	{r4, r5, r6, pc}
+ 788              	.LVL97:
+ 789              	.L47:
+ 790              	.LCFI20:
+ 791              		.cfi_restore_state
+ 519:../../../mod/flash/flash.c **** 	}
+ 792              		.loc 1 519 9 view .LVU202
+ 793 006a 0420     		movs	r0, #4
+ 794              	.LVL98:
+ 519:../../../mod/flash/flash.c **** 	}
+ 795              		.loc 1 519 9 view .LVU203
+ 796 006c FBE7     		b	.L44
+ 797              	.LVL99:
+ 798              	.L48:
+ 532:../../../mod/flash/flash.c **** 	}
+ 799              		.loc 1 532 9 view .LVU204
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 26
+
+
+ 800 006e 0420     		movs	r0, #4
+ 801              	.LVL100:
+ 532:../../../mod/flash/flash.c **** 	}
+ 802              		.loc 1 532 9 view .LVU205
+ 803 0070 F9E7     		b	.L44
+ 804              	.LVL101:
+ 805              	.L49:
+ 806              	.LBB7:
+ 807              	.LBB6:
+ 548:../../../mod/flash/flash.c **** 		}
+ 808              		.loc 1 548 10 view .LVU206
+ 809 0072 0420     		movs	r0, #4
+ 810              	.LVL102:
+ 548:../../../mod/flash/flash.c **** 		}
+ 811              		.loc 1 548 10 view .LVU207
+ 812 0074 F7E7     		b	.L44
+ 813              	.L53:
+ 814 0076 00BF     		.align	2
+ 815              	.L52:
+ 816 0078 00040258 		.word	1476527104
+ 817 007c 00000000 		.word	hspi2
+ 818              	.LBE6:
+ 819              	.LBE7:
+ 820              		.cfi_endproc
+ 821              	.LFE149:
+ 823              		.section	.text.flash_erase,"ax",%progbits
+ 824              		.align	1
+ 825              		.global	flash_erase
+ 826              		.syntax unified
+ 827              		.thumb
+ 828              		.thumb_func
+ 830              	flash_erase:
+ 831              	.LVL103:
+ 832              	.LFB150:
+ 558:../../../mod/flash/flash.c **** 
+ 559:../../../mod/flash/flash.c **** 
+ 560:../../../mod/flash/flash.c **** /*******************************************************************************
+ 561:../../../mod/flash/flash.c **** *                                                                              *
+ 562:../../../mod/flash/flash.c **** * PROCEDURE:                                                                   * 
+ 563:../../../mod/flash/flash.c **** * 		flash_erase                                                            *
+ 564:../../../mod/flash/flash.c **** *                                                                              *
+ 565:../../../mod/flash/flash.c **** * DESCRIPTION:                                                                 * 
+ 566:../../../mod/flash/flash.c **** *       erases the entire flash chip                                           *
+ 567:../../../mod/flash/flash.c **** *                                                                              *
+ 568:../../../mod/flash/flash.c **** *******************************************************************************/
+ 569:../../../mod/flash/flash.c **** FLASH_STATUS flash_erase
+ 570:../../../mod/flash/flash.c ****     (
+ 571:../../../mod/flash/flash.c ****     HFLASH_BUFFER* pflash_handle	
+ 572:../../../mod/flash/flash.c ****     )
+ 573:../../../mod/flash/flash.c **** {
+ 833              		.loc 1 573 1 is_stmt 1 view -0
+ 834              		.cfi_startproc
+ 835              		@ args = 0, pretend = 0, frame = 8
+ 836              		@ frame_needed = 0, uses_anonymous_args = 0
+ 837              		.loc 1 573 1 is_stmt 0 view .LVU209
+ 838 0000 00B5     		push	{lr}
+ 839              	.LCFI21:
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 27
+
+
+ 840              		.cfi_def_cfa_offset 4
+ 841              		.cfi_offset 14, -4
+ 842 0002 83B0     		sub	sp, sp, #12
+ 843              	.LCFI22:
+ 844              		.cfi_def_cfa_offset 16
+ 574:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 575:../../../mod/flash/flash.c ****  Local variables 
+ 576:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 577:../../../mod/flash/flash.c **** int8_t  hal_status;    /* Status code return by hal spi functions              */
+ 845              		.loc 1 577 1 is_stmt 1 view .LVU210
+ 578:../../../mod/flash/flash.c **** uint8_t transmit_data; /* Data to be transmitted over SPI                      */
+ 846              		.loc 1 578 1 view .LVU211
+ 579:../../../mod/flash/flash.c **** 
+ 580:../../../mod/flash/flash.c **** 
+ 581:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 582:../../../mod/flash/flash.c ****  Initializations 
+ 583:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 584:../../../mod/flash/flash.c **** transmit_data = FLASH_OP_HW_FULL_ERASE;
+ 847              		.loc 1 584 1 view .LVU212
+ 848              		.loc 1 584 15 is_stmt 0 view .LVU213
+ 849 0004 6023     		movs	r3, #96
+ 850 0006 8DF80730 		strb	r3, [sp, #7]
+ 585:../../../mod/flash/flash.c **** 
+ 586:../../../mod/flash/flash.c **** 
+ 587:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 588:../../../mod/flash/flash.c ****  API function implementation
+ 589:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 590:../../../mod/flash/flash.c **** 
+ 591:../../../mod/flash/flash.c **** /* Check if write_enabled */
+ 592:../../../mod/flash/flash.c **** if( pflash_handle -> write_enabled == false )
+ 851              		.loc 1 592 1 is_stmt 1 view .LVU214
+ 852              		.loc 1 592 19 is_stmt 0 view .LVU215
+ 853 000a 90F89030 		ldrb	r3, [r0, #144]	@ zero_extendqisi2
+ 854              		.loc 1 592 3 view .LVU216
+ 855 000e C3B1     		cbz	r3, .L56
+ 593:../../../mod/flash/flash.c **** 	{
+ 594:../../../mod/flash/flash.c **** 	return FLASH_WRITE_PROTECTED;
+ 595:../../../mod/flash/flash.c **** 	}
+ 596:../../../mod/flash/flash.c **** 
+ 597:../../../mod/flash/flash.c **** /* Drive chip enable line low */
+ 598:../../../mod/flash/flash.c **** HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET );
+ 856              		.loc 1 598 1 is_stmt 1 view .LVU217
+ 857 0010 0022     		movs	r2, #0
+ 858 0012 4FF48051 		mov	r1, #4096
+ 859 0016 0D48     		ldr	r0, .L59
+ 860              	.LVL104:
+ 861              		.loc 1 598 1 is_stmt 0 view .LVU218
+ 862 0018 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 863              	.LVL105:
+ 599:../../../mod/flash/flash.c **** 
+ 600:../../../mod/flash/flash.c **** /* Full chip erase */
+ 601:../../../mod/flash/flash.c **** hal_status = HAL_SPI_Transmit(
+ 864              		.loc 1 601 1 is_stmt 1 view .LVU219
+ 865              		.loc 1 601 14 is_stmt 0 view .LVU220
+ 866 001c 0123     		movs	r3, #1
+ 867 001e 1A46     		mov	r2, r3
+ 868 0020 0DF10701 		add	r1, sp, #7
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 28
+
+
+ 869 0024 0A48     		ldr	r0, .L59+4
+ 870 0026 FFF7FEFF 		bl	HAL_SPI_Transmit
+ 871              	.LVL106:
+ 602:../../../mod/flash/flash.c **** 							  &hspi2                 ,
+ 603:../../../mod/flash/flash.c **** 							  &transmit_data         ,
+ 604:../../../mod/flash/flash.c **** 							  sizeof( transmit_data ),
+ 605:../../../mod/flash/flash.c **** 							  HAL_DEFAULT_TIMEOUT
+ 606:../../../mod/flash/flash.c **** 							 );
+ 607:../../../mod/flash/flash.c **** 
+ 608:../../../mod/flash/flash.c **** if ( hal_status == HAL_TIMEOUT )
+ 872              		.loc 1 608 1 is_stmt 1 view .LVU221
+ 873              		.loc 1 608 4 is_stmt 0 view .LVU222
+ 874 002a 0328     		cmp	r0, #3
+ 875 002c 0BD0     		beq	.L57
+ 609:../../../mod/flash/flash.c **** 	{
+ 610:../../../mod/flash/flash.c **** 	return FLASH_TIMEOUT;
+ 611:../../../mod/flash/flash.c **** 	}
+ 612:../../../mod/flash/flash.c **** 
+ 613:../../../mod/flash/flash.c **** /* Drive chip enable line high */
+ 614:../../../mod/flash/flash.c **** HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_SET );
+ 876              		.loc 1 614 1 is_stmt 1 view .LVU223
+ 877 002e 0122     		movs	r2, #1
+ 878 0030 4FF48051 		mov	r1, #4096
+ 879 0034 0548     		ldr	r0, .L59
+ 880              	.LVL107:
+ 881              		.loc 1 614 1 is_stmt 0 view .LVU224
+ 882 0036 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 883              	.LVL108:
+ 615:../../../mod/flash/flash.c **** 
+ 616:../../../mod/flash/flash.c **** return FLASH_OK;
+ 884              		.loc 1 616 1 is_stmt 1 view .LVU225
+ 885              		.loc 1 616 8 is_stmt 0 view .LVU226
+ 886 003a 0020     		movs	r0, #0
+ 887              	.L55:
+ 617:../../../mod/flash/flash.c **** 
+ 618:../../../mod/flash/flash.c **** } /* flash_erase */
+ 888              		.loc 1 618 1 view .LVU227
+ 889 003c 03B0     		add	sp, sp, #12
+ 890              	.LCFI23:
+ 891              		.cfi_remember_state
+ 892              		.cfi_def_cfa_offset 4
+ 893              		@ sp needed
+ 894 003e 5DF804FB 		ldr	pc, [sp], #4
+ 895              	.LVL109:
+ 896              	.L56:
+ 897              	.LCFI24:
+ 898              		.cfi_restore_state
+ 594:../../../mod/flash/flash.c **** 	}
+ 899              		.loc 1 594 9 view .LVU228
+ 900 0042 0520     		movs	r0, #5
+ 901              	.LVL110:
+ 594:../../../mod/flash/flash.c **** 	}
+ 902              		.loc 1 594 9 view .LVU229
+ 903 0044 FAE7     		b	.L55
+ 904              	.LVL111:
+ 905              	.L57:
+ 610:../../../mod/flash/flash.c **** 	}
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 29
+
+
+ 906              		.loc 1 610 9 view .LVU230
+ 907 0046 0420     		movs	r0, #4
+ 908              	.LVL112:
+ 610:../../../mod/flash/flash.c **** 	}
+ 909              		.loc 1 610 9 view .LVU231
+ 910 0048 F8E7     		b	.L55
+ 911              	.L60:
+ 912 004a 00BF     		.align	2
+ 913              	.L59:
+ 914 004c 00040258 		.word	1476527104
+ 915 0050 00000000 		.word	hspi2
+ 916              		.cfi_endproc
+ 917              	.LFE150:
+ 919              		.section	.text.flash_high_speed_read,"ax",%progbits
+ 920              		.align	1
+ 921              		.global	flash_high_speed_read
+ 922              		.syntax unified
+ 923              		.thumb
+ 924              		.thumb_func
+ 926              	flash_high_speed_read:
+ 927              	.LVL113:
+ 928              	.LFB151:
+ 619:../../../mod/flash/flash.c **** 
+ 620:../../../mod/flash/flash.c **** 
+ 621:../../../mod/flash/flash.c **** /*******************************************************************************
+ 622:../../../mod/flash/flash.c **** *                                                                              *
+ 623:../../../mod/flash/flash.c **** * PROCEDURE:                                                                   * 
+ 624:../../../mod/flash/flash.c **** * 		flash_high_speed_read                                                  *
+ 625:../../../mod/flash/flash.c **** *                                                                              *
+ 626:../../../mod/flash/flash.c **** * DESCRIPTION:                                                                 * 
+ 627:../../../mod/flash/flash.c **** *       high speed reads a specified number of bytes using a flash buffer      *
+ 628:../../../mod/flash/flash.c **** *                                                                              *
+ 629:../../../mod/flash/flash.c **** *******************************************************************************/
+ 630:../../../mod/flash/flash.c **** FLASH_STATUS flash_high_speed_read
+ 631:../../../mod/flash/flash.c ****     (
+ 632:../../../mod/flash/flash.c **** 	HFLASH_BUFFER* pflash_handle,
+ 633:../../../mod/flash/flash.c ****     uint8_t        num_bytes
+ 634:../../../mod/flash/flash.c ****     )
+ 635:../../../mod/flash/flash.c **** {
+ 929              		.loc 1 635 1 is_stmt 1 view -0
+ 930              		.cfi_startproc
+ 931              		@ args = 0, pretend = 0, frame = 8
+ 932              		@ frame_needed = 0, uses_anonymous_args = 0
+ 933              		.loc 1 635 1 is_stmt 0 view .LVU233
+ 934 0000 70B5     		push	{r4, r5, r6, lr}
+ 935              	.LCFI25:
+ 936              		.cfi_def_cfa_offset 16
+ 937              		.cfi_offset 4, -16
+ 938              		.cfi_offset 5, -12
+ 939              		.cfi_offset 6, -8
+ 940              		.cfi_offset 14, -4
+ 941 0002 82B0     		sub	sp, sp, #8
+ 942              	.LCFI26:
+ 943              		.cfi_def_cfa_offset 24
+ 944 0004 0546     		mov	r5, r0
+ 945 0006 0E46     		mov	r6, r1
+ 636:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 30
+
+
+ 637:../../../mod/flash/flash.c ****  Local variables 
+ 638:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 639:../../../mod/flash/flash.c **** uint8_t hal_status;    /* Status code return by hal spi functions             */
+ 946              		.loc 1 639 1 is_stmt 1 view .LVU234
+ 640:../../../mod/flash/flash.c **** uint8_t transmit_data; /* Data to be transmitted over SPI                     */
+ 947              		.loc 1 640 1 view .LVU235
+ 641:../../../mod/flash/flash.c **** uint8_t dummy_byte;
+ 948              		.loc 1 641 1 view .LVU236
+ 642:../../../mod/flash/flash.c **** 
+ 643:../../../mod/flash/flash.c **** 
+ 644:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 645:../../../mod/flash/flash.c ****  Initializations 
+ 646:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 647:../../../mod/flash/flash.c **** transmit_data = FLASH_OP_HW_READ_HS;
+ 949              		.loc 1 647 1 view .LVU237
+ 950              		.loc 1 647 15 is_stmt 0 view .LVU238
+ 951 0008 0B23     		movs	r3, #11
+ 952 000a 8DF80730 		strb	r3, [sp, #7]
+ 648:../../../mod/flash/flash.c **** dummy_byte    = 0;
+ 953              		.loc 1 648 1 is_stmt 1 view .LVU239
+ 954              		.loc 1 648 15 is_stmt 0 view .LVU240
+ 955 000e 0022     		movs	r2, #0
+ 956 0010 8DF80620 		strb	r2, [sp, #6]
+ 649:../../../mod/flash/flash.c **** 
+ 650:../../../mod/flash/flash.c **** 
+ 651:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 652:../../../mod/flash/flash.c ****  API function implementation
+ 653:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 654:../../../mod/flash/flash.c **** 
+ 655:../../../mod/flash/flash.c **** /* Drive chip enable line low */
+ 656:../../../mod/flash/flash.c **** HAL_GPIO_WritePin(FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET);
+ 957              		.loc 1 656 1 is_stmt 1 view .LVU241
+ 958 0014 4FF48051 		mov	r1, #4096
+ 959              	.LVL114:
+ 960              		.loc 1 656 1 is_stmt 0 view .LVU242
+ 961 0018 1D48     		ldr	r0, .L71
+ 962              	.LVL115:
+ 963              		.loc 1 656 1 view .LVU243
+ 964 001a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 965              	.LVL116:
+ 657:../../../mod/flash/flash.c **** 
+ 658:../../../mod/flash/flash.c **** /* Send command code*/
+ 659:../../../mod/flash/flash.c **** hal_status = HAL_SPI_Transmit(
+ 966              		.loc 1 659 1 is_stmt 1 view .LVU244
+ 967              		.loc 1 659 14 is_stmt 0 view .LVU245
+ 968 001e 0123     		movs	r3, #1
+ 969 0020 1A46     		mov	r2, r3
+ 970 0022 0DF10701 		add	r1, sp, #7
+ 971 0026 1B48     		ldr	r0, .L71+4
+ 972 0028 FFF7FEFF 		bl	HAL_SPI_Transmit
+ 973              	.LVL117:
+ 660:../../../mod/flash/flash.c **** 							 &hspi2                    ,
+ 661:../../../mod/flash/flash.c ****                              &transmit_data            ,
+ 662:../../../mod/flash/flash.c ****                              sizeof( transmit_data )   ,
+ 663:../../../mod/flash/flash.c ****                              HAL_DEFAULT_TIMEOUT 
+ 664:../../../mod/flash/flash.c ****                              );
+ 665:../../../mod/flash/flash.c **** 
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 31
+
+
+ 666:../../../mod/flash/flash.c **** if ( hal_status == HAL_TIMEOUT )
+ 974              		.loc 1 666 1 is_stmt 1 view .LVU246
+ 975              		.loc 1 666 4 is_stmt 0 view .LVU247
+ 976 002c 0328     		cmp	r0, #3
+ 977 002e 27D0     		beq	.L65
+ 667:../../../mod/flash/flash.c **** 	{
+ 668:../../../mod/flash/flash.c **** 	return FLASH_TIMEOUT;
+ 669:../../../mod/flash/flash.c **** 	}
+ 670:../../../mod/flash/flash.c **** 
+ 671:../../../mod/flash/flash.c **** /* Send Address*/
+ 672:../../../mod/flash/flash.c **** hal_status = HAL_SPI_Transmit(
+ 978              		.loc 1 672 1 is_stmt 1 view .LVU248
+ 979              		.loc 1 672 14 is_stmt 0 view .LVU249
+ 980 0030 0123     		movs	r3, #1
+ 981 0032 0322     		movs	r2, #3
+ 982 0034 E918     		adds	r1, r5, r3
+ 983 0036 1748     		ldr	r0, .L71+4
+ 984              	.LVL118:
+ 985              		.loc 1 672 14 view .LVU250
+ 986 0038 FFF7FEFF 		bl	HAL_SPI_Transmit
+ 987              	.LVL119:
+ 673:../../../mod/flash/flash.c **** 							 &hspi2                             ,
+ 674:../../../mod/flash/flash.c ****                              &( pflash_handle -> address[0] )   ,
+ 675:../../../mod/flash/flash.c ****                              sizeof( pflash_handle -> address )  ,
+ 676:../../../mod/flash/flash.c ****                              HAL_DEFAULT_TIMEOUT 
+ 677:../../../mod/flash/flash.c ****                              );
+ 678:../../../mod/flash/flash.c **** 
+ 679:../../../mod/flash/flash.c **** if ( hal_status == HAL_TIMEOUT )
+ 988              		.loc 1 679 1 is_stmt 1 view .LVU251
+ 989              		.loc 1 679 4 is_stmt 0 view .LVU252
+ 990 003c 0328     		cmp	r0, #3
+ 991 003e 21D0     		beq	.L66
+ 680:../../../mod/flash/flash.c **** 	{
+ 681:../../../mod/flash/flash.c **** 	return FLASH_TIMEOUT;
+ 682:../../../mod/flash/flash.c **** 	}
+ 683:../../../mod/flash/flash.c **** 
+ 684:../../../mod/flash/flash.c **** /* Send Dummy Byte */
+ 685:../../../mod/flash/flash.c **** hal_status = HAL_SPI_Transmit(
+ 992              		.loc 1 685 1 is_stmt 1 view .LVU253
+ 993              		.loc 1 685 14 is_stmt 0 view .LVU254
+ 994 0040 0123     		movs	r3, #1
+ 995 0042 1A46     		mov	r2, r3
+ 996 0044 0DF10601 		add	r1, sp, #6
+ 997 0048 1248     		ldr	r0, .L71+4
+ 998              	.LVL120:
+ 999              		.loc 1 685 14 view .LVU255
+ 1000 004a FFF7FEFF 		bl	HAL_SPI_Transmit
+ 1001              	.LVL121:
+ 686:../../../mod/flash/flash.c **** 							 &hspi2              ,
+ 687:../../../mod/flash/flash.c ****                              &dummy_byte         ,
+ 688:../../../mod/flash/flash.c ****                              sizeof( uint8_t )   ,
+ 689:../../../mod/flash/flash.c ****                              HAL_DEFAULT_TIMEOUT 
+ 690:../../../mod/flash/flash.c ****                              );
+ 691:../../../mod/flash/flash.c **** 
+ 692:../../../mod/flash/flash.c **** if ( hal_status == HAL_TIMEOUT )
+ 1002              		.loc 1 692 1 is_stmt 1 view .LVU256
+ 1003              		.loc 1 692 4 is_stmt 0 view .LVU257
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 32
+
+
+ 1004 004e 0328     		cmp	r0, #3
+ 1005 0050 1AD0     		beq	.L67
+ 1006              	.LBB8:
+ 693:../../../mod/flash/flash.c **** 	{
+ 694:../../../mod/flash/flash.c **** 	return FLASH_TIMEOUT;
+ 695:../../../mod/flash/flash.c **** 	}
+ 696:../../../mod/flash/flash.c **** 
+ 697:../../../mod/flash/flash.c **** /* Recieve output into buffer*/
+ 698:../../../mod/flash/flash.c **** for(int i = 0; i < num_bytes; ++i)
+ 1007              		.loc 1 698 9 view .LVU258
+ 1008 0052 0024     		movs	r4, #0
+ 1009              	.L63:
+ 1010              	.LVL122:
+ 1011              		.loc 1 698 16 is_stmt 1 discriminator 1 view .LVU259
+ 1012              		.loc 1 698 1 is_stmt 0 discriminator 1 view .LVU260
+ 1013 0054 A642     		cmp	r6, r4
+ 1014 0056 0ADD     		ble	.L70
+ 1015              	.LBB9:
+ 699:../../../mod/flash/flash.c **** 	{
+ 700:../../../mod/flash/flash.c **** 	uint8_t* pbuffer = ( pflash_handle -> pbuffer ) + i;
+ 1016              		.loc 1 700 2 is_stmt 1 view .LVU261
+ 1017              		.loc 1 700 37 is_stmt 0 view .LVU262
+ 1018 0058 6968     		ldr	r1, [r5, #4]
+ 1019              	.LVL123:
+ 701:../../../mod/flash/flash.c ****     hal_status = HAL_SPI_Receive(
+ 1020              		.loc 1 701 5 is_stmt 1 view .LVU263
+ 1021              		.loc 1 701 18 is_stmt 0 view .LVU264
+ 1022 005a 0123     		movs	r3, #1
+ 1023 005c 1A46     		mov	r2, r3
+ 1024 005e 2144     		add	r1, r1, r4
+ 1025              	.LVL124:
+ 1026              		.loc 1 701 18 view .LVU265
+ 1027 0060 0C48     		ldr	r0, .L71+4
+ 1028              	.LVL125:
+ 1029              		.loc 1 701 18 view .LVU266
+ 1030 0062 FFF7FEFF 		bl	HAL_SPI_Receive
+ 1031              	.LVL126:
+ 702:../../../mod/flash/flash.c ****                                 &hspi2                    ,
+ 703:../../../mod/flash/flash.c ****                                 pbuffer                   ,
+ 704:../../../mod/flash/flash.c ****                                 sizeof( uint8_t )         ,
+ 705:../../../mod/flash/flash.c **** 							    HAL_DEFAULT_TIMEOUT
+ 706:../../../mod/flash/flash.c ****                                 );
+ 707:../../../mod/flash/flash.c **** 
+ 708:../../../mod/flash/flash.c ****     if ( hal_status == HAL_TIMEOUT )
+ 1032              		.loc 1 708 5 is_stmt 1 view .LVU267
+ 1033              		.loc 1 708 8 is_stmt 0 view .LVU268
+ 1034 0066 0328     		cmp	r0, #3
+ 1035 0068 10D0     		beq	.L68
+ 1036              	.LBE9:
+ 698:../../../mod/flash/flash.c **** 	{
+ 1037              		.loc 1 698 31 is_stmt 1 discriminator 2 view .LVU269
+ 1038 006a 0134     		adds	r4, r4, #1
+ 1039              	.LVL127:
+ 698:../../../mod/flash/flash.c **** 	{
+ 1040              		.loc 1 698 31 is_stmt 0 discriminator 2 view .LVU270
+ 1041 006c F2E7     		b	.L63
+ 1042              	.L70:
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 33
+
+
+ 698:../../../mod/flash/flash.c **** 	{
+ 1043              		.loc 1 698 31 discriminator 2 view .LVU271
+ 1044              	.LBE8:
+ 709:../../../mod/flash/flash.c **** 		{
+ 710:../../../mod/flash/flash.c **** 		return FLASH_TIMEOUT;
+ 711:../../../mod/flash/flash.c **** 		}
+ 712:../../../mod/flash/flash.c **** 	}
+ 713:../../../mod/flash/flash.c **** 
+ 714:../../../mod/flash/flash.c **** /* Drive chip enable line high */
+ 715:../../../mod/flash/flash.c **** HAL_GPIO_WritePin( FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_SET );
+ 1045              		.loc 1 715 1 is_stmt 1 view .LVU272
+ 1046 006e 0122     		movs	r2, #1
+ 1047 0070 4FF48051 		mov	r1, #4096
+ 1048 0074 0648     		ldr	r0, .L71
+ 1049              	.LVL128:
+ 1050              		.loc 1 715 1 is_stmt 0 view .LVU273
+ 1051 0076 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 1052              	.LVL129:
+ 716:../../../mod/flash/flash.c **** 
+ 717:../../../mod/flash/flash.c **** return FLASH_OK;
+ 1053              		.loc 1 717 1 is_stmt 1 view .LVU274
+ 1054              		.loc 1 717 8 is_stmt 0 view .LVU275
+ 1055 007a 0020     		movs	r0, #0
+ 1056              	.LVL130:
+ 1057              	.L62:
+ 718:../../../mod/flash/flash.c **** 
+ 719:../../../mod/flash/flash.c **** } /* flash_high_speed_read */
+ 1058              		.loc 1 719 1 view .LVU276
+ 1059 007c 02B0     		add	sp, sp, #8
+ 1060              	.LCFI27:
+ 1061              		.cfi_remember_state
+ 1062              		.cfi_def_cfa_offset 16
+ 1063              		@ sp needed
+ 1064 007e 70BD     		pop	{r4, r5, r6, pc}
+ 1065              	.LVL131:
+ 1066              	.L65:
+ 1067              	.LCFI28:
+ 1068              		.cfi_restore_state
+ 668:../../../mod/flash/flash.c **** 	}
+ 1069              		.loc 1 668 9 view .LVU277
+ 1070 0080 0420     		movs	r0, #4
+ 1071              	.LVL132:
+ 668:../../../mod/flash/flash.c **** 	}
+ 1072              		.loc 1 668 9 view .LVU278
+ 1073 0082 FBE7     		b	.L62
+ 1074              	.LVL133:
+ 1075              	.L66:
+ 681:../../../mod/flash/flash.c **** 	}
+ 1076              		.loc 1 681 9 view .LVU279
+ 1077 0084 0420     		movs	r0, #4
+ 1078              	.LVL134:
+ 681:../../../mod/flash/flash.c **** 	}
+ 1079              		.loc 1 681 9 view .LVU280
+ 1080 0086 F9E7     		b	.L62
+ 1081              	.LVL135:
+ 1082              	.L67:
+ 694:../../../mod/flash/flash.c **** 	}
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 34
+
+
+ 1083              		.loc 1 694 9 view .LVU281
+ 1084 0088 0420     		movs	r0, #4
+ 1085              	.LVL136:
+ 694:../../../mod/flash/flash.c **** 	}
+ 1086              		.loc 1 694 9 view .LVU282
+ 1087 008a F7E7     		b	.L62
+ 1088              	.LVL137:
+ 1089              	.L68:
+ 1090              	.LBB11:
+ 1091              	.LBB10:
+ 710:../../../mod/flash/flash.c **** 		}
+ 1092              		.loc 1 710 10 view .LVU283
+ 1093 008c 0420     		movs	r0, #4
+ 1094              	.LVL138:
+ 710:../../../mod/flash/flash.c **** 		}
+ 1095              		.loc 1 710 10 view .LVU284
+ 1096 008e F5E7     		b	.L62
+ 1097              	.L72:
+ 1098              		.align	2
+ 1099              	.L71:
+ 1100 0090 00040258 		.word	1476527104
+ 1101 0094 00000000 		.word	hspi2
+ 1102              	.LBE10:
+ 1103              	.LBE11:
+ 1104              		.cfi_endproc
+ 1105              	.LFE151:
+ 1107              		.section	.text.flash_4k_erase,"ax",%progbits
+ 1108              		.align	1
+ 1109              		.global	flash_4k_erase
+ 1110              		.syntax unified
+ 1111              		.thumb
+ 1112              		.thumb_func
+ 1114              	flash_4k_erase:
+ 1115              	.LVL139:
+ 1116              	.LFB152:
+ 720:../../../mod/flash/flash.c **** 
+ 721:../../../mod/flash/flash.c **** 
+ 722:../../../mod/flash/flash.c **** /*******************************************************************************
+ 723:../../../mod/flash/flash.c **** *                                                                              *
+ 724:../../../mod/flash/flash.c **** * PROCEDURE:                                                                   * 
+ 725:../../../mod/flash/flash.c **** * 		flash_block_erase                                                      *
+ 726:../../../mod/flash/flash.c **** *                                                                              *
+ 727:../../../mod/flash/flash.c **** * DESCRIPTION:                                                                 * 
+ 728:../../../mod/flash/flash.c **** *       block erase 4 bit of data from Flash chip                              *
+ 729:../../../mod/flash/flash.c **** *                                                                              *
+ 730:../../../mod/flash/flash.c **** *******************************************************************************/
+ 731:../../../mod/flash/flash.c **** FLASH_STATUS flash_4k_erase
+ 732:../../../mod/flash/flash.c ****     (
+ 733:../../../mod/flash/flash.c ****     HFLASH_BUFFER* pflash_handle,
+ 734:../../../mod/flash/flash.c ****     uint8_t        num_bytes
+ 735:../../../mod/flash/flash.c ****     )
+ 736:../../../mod/flash/flash.c **** {
+ 1117              		.loc 1 736 1 is_stmt 1 view -0
+ 1118              		.cfi_startproc
+ 1119              		@ args = 0, pretend = 0, frame = 8
+ 1120              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1121              		.loc 1 736 1 is_stmt 0 view .LVU286
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 35
+
+
+ 1122 0000 10B5     		push	{r4, lr}
+ 1123              	.LCFI29:
+ 1124              		.cfi_def_cfa_offset 8
+ 1125              		.cfi_offset 4, -8
+ 1126              		.cfi_offset 14, -4
+ 1127 0002 82B0     		sub	sp, sp, #8
+ 1128              	.LCFI30:
+ 1129              		.cfi_def_cfa_offset 16
+ 737:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 738:../../../mod/flash/flash.c ****  Local variables 
+ 739:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 740:../../../mod/flash/flash.c **** uint8_t hal_status;    /* Status code return by hal spi functions             */
+ 1130              		.loc 1 740 1 is_stmt 1 view .LVU287
+ 741:../../../mod/flash/flash.c **** uint8_t transmit_data; /* Data to be transmitted over SPI                     */
+ 1131              		.loc 1 741 1 view .LVU288
+ 742:../../../mod/flash/flash.c **** 
+ 743:../../../mod/flash/flash.c **** 
+ 744:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 745:../../../mod/flash/flash.c ****  Initializations 
+ 746:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 747:../../../mod/flash/flash.c **** transmit_data = FLASH_OP_HW_4K_ERASE;
+ 1132              		.loc 1 747 1 view .LVU289
+ 1133              		.loc 1 747 15 is_stmt 0 view .LVU290
+ 1134 0004 2023     		movs	r3, #32
+ 1135 0006 8DF80730 		strb	r3, [sp, #7]
+ 748:../../../mod/flash/flash.c **** 
+ 749:../../../mod/flash/flash.c **** /*------------------------------------------------------------------------------
+ 750:../../../mod/flash/flash.c ****  API function implementation
+ 751:../../../mod/flash/flash.c **** ------------------------------------------------------------------------------*/
+ 752:../../../mod/flash/flash.c **** 
+ 753:../../../mod/flash/flash.c **** /* Check if write_enabled */
+ 754:../../../mod/flash/flash.c **** if ( pflash_handle -> write_enabled == false )
+ 1136              		.loc 1 754 1 is_stmt 1 view .LVU291
+ 1137              		.loc 1 754 20 is_stmt 0 view .LVU292
+ 1138 000a 90F89030 		ldrb	r3, [r0, #144]	@ zero_extendqisi2
+ 1139              		.loc 1 754 4 view .LVU293
+ 1140 000e 03B3     		cbz	r3, .L75
+ 1141 0010 0446     		mov	r4, r0
+ 755:../../../mod/flash/flash.c **** 	{
+ 756:../../../mod/flash/flash.c ****     return FLASH_WRITE_PROTECTED;
+ 757:../../../mod/flash/flash.c **** 	}
+ 758:../../../mod/flash/flash.c **** 
+ 759:../../../mod/flash/flash.c **** /* Drive chip enable line low */
+ 760:../../../mod/flash/flash.c **** HAL_GPIO_WritePin(FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET);
+ 1142              		.loc 1 760 1 is_stmt 1 view .LVU294
+ 1143 0012 0022     		movs	r2, #0
+ 1144 0014 4FF48051 		mov	r1, #4096
+ 1145              	.LVL140:
+ 1146              		.loc 1 760 1 is_stmt 0 view .LVU295
+ 1147 0018 1148     		ldr	r0, .L79
+ 1148              	.LVL141:
+ 1149              		.loc 1 760 1 view .LVU296
+ 1150 001a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 1151              	.LVL142:
+ 761:../../../mod/flash/flash.c **** 
+ 762:../../../mod/flash/flash.c **** /* Send command code */
+ 763:../../../mod/flash/flash.c **** hal_status = HAL_SPI_Transmit(
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 36
+
+
+ 1152              		.loc 1 763 1 is_stmt 1 view .LVU297
+ 1153              		.loc 1 763 14 is_stmt 0 view .LVU298
+ 1154 001e 0123     		movs	r3, #1
+ 1155 0020 1A46     		mov	r2, r3
+ 1156 0022 0DF10701 		add	r1, sp, #7
+ 1157 0026 0F48     		ldr	r0, .L79+4
+ 1158 0028 FFF7FEFF 		bl	HAL_SPI_Transmit
+ 1159              	.LVL143:
+ 764:../../../mod/flash/flash.c **** 							 &hspi2                    ,
+ 765:../../../mod/flash/flash.c ****                              &transmit_data            ,
+ 766:../../../mod/flash/flash.c ****                              sizeof( transmit_data )   ,
+ 767:../../../mod/flash/flash.c ****                              HAL_DEFAULT_TIMEOUT 
+ 768:../../../mod/flash/flash.c ****                              );
+ 769:../../../mod/flash/flash.c **** 
+ 770:../../../mod/flash/flash.c **** if ( hal_status == HAL_TIMEOUT )
+ 1160              		.loc 1 770 1 is_stmt 1 view .LVU299
+ 1161              		.loc 1 770 4 is_stmt 0 view .LVU300
+ 1162 002c 0328     		cmp	r0, #3
+ 1163 002e 12D0     		beq	.L76
+ 771:../../../mod/flash/flash.c **** 	{
+ 772:../../../mod/flash/flash.c **** 	return FLASH_TIMEOUT;
+ 773:../../../mod/flash/flash.c **** 	}
+ 774:../../../mod/flash/flash.c **** 
+ 775:../../../mod/flash/flash.c **** /* Send Address*/
+ 776:../../../mod/flash/flash.c **** hal_status = HAL_SPI_Transmit(
+ 1164              		.loc 1 776 1 is_stmt 1 view .LVU301
+ 1165              		.loc 1 776 14 is_stmt 0 view .LVU302
+ 1166 0030 0123     		movs	r3, #1
+ 1167 0032 0322     		movs	r2, #3
+ 1168 0034 E118     		adds	r1, r4, r3
+ 1169 0036 0B48     		ldr	r0, .L79+4
+ 1170              	.LVL144:
+ 1171              		.loc 1 776 14 view .LVU303
+ 1172 0038 FFF7FEFF 		bl	HAL_SPI_Transmit
+ 1173              	.LVL145:
+ 777:../../../mod/flash/flash.c **** 							 &hspi2                             ,
+ 778:../../../mod/flash/flash.c ****                              &( pflash_handle -> address[0] )   ,
+ 779:../../../mod/flash/flash.c ****                              sizeof( pflash_handle -> address )  ,
+ 780:../../../mod/flash/flash.c ****                              HAL_DEFAULT_TIMEOUT 
+ 781:../../../mod/flash/flash.c ****                              );
+ 782:../../../mod/flash/flash.c **** 
+ 783:../../../mod/flash/flash.c **** if ( hal_status == HAL_TIMEOUT )
+ 1174              		.loc 1 783 1 is_stmt 1 view .LVU304
+ 1175              		.loc 1 783 4 is_stmt 0 view .LVU305
+ 1176 003c 0328     		cmp	r0, #3
+ 1177 003e 0CD0     		beq	.L77
+ 784:../../../mod/flash/flash.c **** 	{
+ 785:../../../mod/flash/flash.c **** 	return FLASH_TIMEOUT;
+ 786:../../../mod/flash/flash.c **** 	}
+ 787:../../../mod/flash/flash.c **** 
+ 788:../../../mod/flash/flash.c **** /* Drive chip enable line high */
+ 789:../../../mod/flash/flash.c **** HAL_GPIO_WritePin(FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_SET);
+ 1178              		.loc 1 789 1 is_stmt 1 view .LVU306
+ 1179 0040 0122     		movs	r2, #1
+ 1180 0042 4FF48051 		mov	r1, #4096
+ 1181 0046 0648     		ldr	r0, .L79
+ 1182              	.LVL146:
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 37
+
+
+ 1183              		.loc 1 789 1 is_stmt 0 view .LVU307
+ 1184 0048 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 1185              	.LVL147:
+ 790:../../../mod/flash/flash.c **** 
+ 791:../../../mod/flash/flash.c **** return FLASH_OK;
+ 1186              		.loc 1 791 1 is_stmt 1 view .LVU308
+ 1187              		.loc 1 791 8 is_stmt 0 view .LVU309
+ 1188 004c 0020     		movs	r0, #0
+ 1189              	.LVL148:
+ 1190              	.L74:
+ 792:../../../mod/flash/flash.c **** 
+ 793:../../../mod/flash/flash.c **** } /* flash_block_erase */
+ 1191              		.loc 1 793 1 view .LVU310
+ 1192 004e 02B0     		add	sp, sp, #8
+ 1193              	.LCFI31:
+ 1194              		.cfi_remember_state
+ 1195              		.cfi_def_cfa_offset 8
+ 1196              		@ sp needed
+ 1197 0050 10BD     		pop	{r4, pc}
+ 1198              	.LVL149:
+ 1199              	.L75:
+ 1200              	.LCFI32:
+ 1201              		.cfi_restore_state
+ 756:../../../mod/flash/flash.c **** 	}
+ 1202              		.loc 1 756 12 view .LVU311
+ 1203 0052 0520     		movs	r0, #5
+ 1204              	.LVL150:
+ 756:../../../mod/flash/flash.c **** 	}
+ 1205              		.loc 1 756 12 view .LVU312
+ 1206 0054 FBE7     		b	.L74
+ 1207              	.LVL151:
+ 1208              	.L76:
+ 772:../../../mod/flash/flash.c **** 	}
+ 1209              		.loc 1 772 9 view .LVU313
+ 1210 0056 0420     		movs	r0, #4
+ 1211              	.LVL152:
+ 772:../../../mod/flash/flash.c **** 	}
+ 1212              		.loc 1 772 9 view .LVU314
+ 1213 0058 F9E7     		b	.L74
+ 1214              	.LVL153:
+ 1215              	.L77:
+ 785:../../../mod/flash/flash.c **** 	}
+ 1216              		.loc 1 785 9 view .LVU315
+ 1217 005a 0420     		movs	r0, #4
+ 1218              	.LVL154:
+ 785:../../../mod/flash/flash.c **** 	}
+ 1219              		.loc 1 785 9 view .LVU316
+ 1220 005c F7E7     		b	.L74
+ 1221              	.L80:
+ 1222 005e 00BF     		.align	2
+ 1223              	.L79:
+ 1224 0060 00040258 		.word	1476527104
+ 1225 0064 00000000 		.word	hspi2
+ 1226              		.cfi_endproc
+ 1227              	.LFE152:
+ 1229              		.text
+ 1230              	.Letext0:
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 38
+
+
+ 1231              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1232              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1233              		.file 4 "../../../lib/Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h750xx.h"
+ 1234              		.file 5 "../../../lib/Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h"
+ 1235              		.file 6 "../../../lib/Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h"
+ 1236              		.file 7 "../../../lib/Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h"
+ 1237              		.file 8 "../../../lib/Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_spi.h"
+ 1238              		.file 9 "../../../lib/Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h"
+ 1239              		.file 10 "../../../mod/flash/flash.h"
+ARM GAS  C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s 			page 39
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 flash.c
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:19     .text.flash_status:00000000 $t
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:25     .text.flash_status:00000000 flash_status
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:123    .text.flash_status:0000005c $d
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:128    .text.flash_write_enable:00000000 $t
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:134    .text.flash_write_enable:00000000 flash_write_enable
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:221    .text.flash_write_enable:00000058 $d
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:227    .text.flash_write_disable:00000000 $t
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:233    .text.flash_write_disable:00000000 flash_write_disable
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:318    .text.flash_write_disable:00000058 $d
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:324    .text.flash_write:00000000 $t
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:330    .text.flash_write:00000000 flash_write
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:457    .text.flash_write:00000074 $d
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:463    .text.flash_cmd_execute:00000000 $t
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:469    .text.flash_cmd_execute:00000000 flash_cmd_execute
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:501    .text.flash_cmd_execute:00000012 $d
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:509    .text.flash_cmd_execute:0000001a $t
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:661    .text.flash_read:00000000 $t
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:667    .text.flash_read:00000000 flash_read
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:816    .text.flash_read:00000078 $d
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:824    .text.flash_erase:00000000 $t
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:830    .text.flash_erase:00000000 flash_erase
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:914    .text.flash_erase:0000004c $d
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:920    .text.flash_high_speed_read:00000000 $t
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:926    .text.flash_high_speed_read:00000000 flash_high_speed_read
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:1100   .text.flash_high_speed_read:00000090 $d
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:1108   .text.flash_4k_erase:00000000 $t
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:1114   .text.flash_4k_erase:00000000 flash_4k_erase
+C:\Users\tnguy\AppData\Local\Temp\ccunUYA8.s:1224   .text.flash_4k_erase:00000060 $d
+
+UNDEFINED SYMBOLS
+HAL_GPIO_WritePin
+HAL_SPI_Transmit
+HAL_SPI_Receive
+hspi2
+HAL_UART_Receive
+HAL_UART_Transmit
