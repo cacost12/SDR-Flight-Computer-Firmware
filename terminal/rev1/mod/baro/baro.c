@@ -243,7 +243,7 @@ switch ( hal_status )
 *******************************************************************************/
 BARO_STATUS baro_get_pressure
 	(
-    uint32_t baro_pressure_data
+    uint32_t *baro_pressure_data_ptr
 	)
 {
 /*------------------------------------------------------------------------------
@@ -271,10 +271,12 @@ if ( baro_status == BARO_TIMEOUT )
 }
 
 /* Combine all bytes value to 24 bit value */
-uint32_t baro_pressure_raw = ( ( uint32_t regPres[0] << 24 ) | ( uint32_t regPres[1] << 16 ) | ( uint32_t regPres[0] << 8 ) ) >> 8;
+uint32_t baro_pressure_raw = ( ( (uint32_t) regPres[2] << 16 ) |
+							   ( (uint32_t) regPres[1] << 8 )  | 
+							   ( (uint32_t) regPres[0] ) );
 
 /* Export data */
-baro_pressure_data = baro_pressure_raw;
+*baro_pressure_data_ptr = baro_pressure_raw;
 
 return BARO_OK;
 } /* baro_get_pressure */
@@ -291,7 +293,7 @@ return BARO_OK;
 *******************************************************************************/
 BARO_STATUS baro_get_temp
 	(
-    uint32_t baro_temp_data
+    uint32_t* baro_temp_data_ptr
 	)
 {
 /*------------------------------------------------------------------------------
@@ -319,10 +321,12 @@ if ( baro_status == BARO_TIMEOUT )
 }
 
 /* Combine all bytes value to 24 bit value */
-uint32_t baro_temp_raw = ( ( uint32_t regPres[0] << 24 ) | ( uint32_t regPres[1] << 16 ) | ( uint32_t regPres[0] << 8 ) ) >> 8;
+uint32_t baro_temp_raw = ( ( (uint32_t) regPres[2] << 16 ) | 
+						   ( (uint32_t) regPres[1] << 8 ) | 
+						   ( (uint32_t) regPres[0] ) );
 
 /* Export data */
-baro_temp_data = baro_temp_raw;
+*baro_temp_data_ptr = baro_temp_raw;
 
 
 return BARO_OK;
