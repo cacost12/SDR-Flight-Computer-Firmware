@@ -70,6 +70,8 @@ USB_STATUS usb_status;     				/* Status of USB HAL         */
 HFLASH_BUFFER flash_buffer; 			/* Flash to PC Data Buffer   */
 HFLASH_BUFFER* pflash_handle = &flash_buffer;
 FLASH_CMD_STATUS flash_run_status;		/* Status of FLASH functions */
+HSENSOR_BUFFER sensor_buffer;
+HSENSOR_BUFFER* psensor_handle = &sensor_buffer;
 
 
 /*------------------------------------------------------------------------------
@@ -110,7 +112,6 @@ else
 while (1)
 	{
 	/* Poll usb port */
-	//first sends flash opcode
 	usb_status = usb_receive( 
                              &usb_rx_data, 
                              sizeof( usb_rx_data ), 
@@ -119,16 +120,15 @@ while (1)
 
 	if ( usb_status == USB_OK ) /* Enter USB mode  */
 		{
-		//gets the actual flash subcmd opcode
 		usb_status = usb_receive( 
 									&usb_rx_data, 
 									sizeof( usb_rx_data ), 
 									HAL_DEFAULT_TIMEOUT 
 								);
 
-		// switch() to	proper flash_subcmd, future implementation
+		/* switch() to proper flash_subcmd, future implementation */
 
-		// extracts whole flash chip, flash chip address from 0 to 0x1FFFF
+		/* Extracts the entire flash chip, flash chip address from 0 to 0x1FFFF */
 		uint8_t buffer;		
 		pflash_handle->pbuffer = &buffer;
 		pflash_handle->address_32 = 0;
@@ -143,7 +143,7 @@ while (1)
 							);
 			}
 			else{
-				// extract failed, stops extracting
+				/* Extract Failed */
 				Error_Handler();
 			}
 			(pflash_handle->address_32)++;
@@ -154,14 +154,30 @@ while (1)
 	/* Poll switch */
 	if ( ign_switch_cont() ) /* Enter data logger mode */
 		{
-		// Erase Flash 
-		while ( 1 )
-			{
-			// Check memory
-			// Poll sensors
-			// Write to flash
-			// Update memory pointer
+		/* Erase the entire Flash chip */
+		flash_run_status = flash_erase();
+		if(flash_run_status == FLASH_OK){
+			while ( 1 )
+				{
+				// Check memory
+				// Poll sensors
+				SENSOR_DATA dummyData;
+				uint32_t dummyTime;
+				psensor_handle->sensor_data = dummyData;
+				psensor_handle->time = dummyTime;
+				pflash_handle->pbuffer = psensor_handle;
+				pflash_handle->address_32 = 0;		//
+				// Write to flash
+				// Update memory pointer
+
+				//WIP: How to get the size of data? Increment address by sizeof(data)
+				//Put the data in flash buffer first? or have a new Write method() that takes in the data
+				}
 			}
+		}
+		else{
+			/* Erase Failed */
+			Error_Handler();
 		}
 
 	}

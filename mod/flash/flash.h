@@ -23,6 +23,7 @@ extern "C" {
 Includes 
 ------------------------------------------------------------------------------*/
 #include <stdbool.h>
+#include "sensor.h"
 
 
 /*------------------------------------------------------------------------------
@@ -86,7 +87,12 @@ typedef struct _FLASH_BUFFER_TAG {
 	/* Contents of status register */
 	uint8_t status_register;
 
-} HFLASH_BUFFER; 
+} HFLASH_BUFFER;
+
+typedef struct _SENSOR_FLASH_BUFFER_TAG {
+    uint32_t time;
+    SENSOR_DATA sensor_data;
+} HSENSOR_BUFFER;
 
 /* Flash subcommand codes */
 typedef enum FLASH_SUBCMD_CODES {

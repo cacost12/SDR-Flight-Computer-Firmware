@@ -21,6 +21,7 @@
 #include "main.h"
 #include "flash.h"
 #include "led.h"
+#include "sdr_pin_defines_A0002.h";
 
 /*------------------------------------------------------------------------------
  Global Variables 
@@ -913,6 +914,76 @@ FLASH_CMD_STATUS flash_extract(HFLASH_BUFFER* pflash_handle){
     return FLASH_TIMEOUT;
     }
     
+
+    /* Drive chip enable line high */
+    HAL_GPIO_WritePin(FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_SET);
+
+    return FLASH_OK;
+
+}
+
+FLASH_CMD_STATUS flash_store
+    (
+        HFLASH_BUFFER* pflash_handle,
+        uint8_t num_bytes           
+    )
+{
+        /*------------------------------------------------------------------------------
+    Local variables 
+    ------------------------------------------------------------------------------*/
+    /* Return data from SPI bus */
+    uint8_t hal_status;    /* Status code return by hal spi functions             */
+    uint8_t transmit_data = FLASH_OP_HW_BYTE_PROGRAM; /* Data to be transmitted over SPI                     */
+
+    /*------------------------------------------------------------------------------
+    API function implementation
+    ------------------------------------------------------------------------------*/
+
+    /* Check if write_enabled */
+    if(pflash_handle -> write_enabled == false)
+        return FLASH_WRITE_PROTECTED;
+
+    /* Drive chip enable line low */
+    HAL_GPIO_WritePin(FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET);
+
+    /* Send command code  */
+    hal_status = HAL_SPI_Transmit(
+                                &hspi2                    ,
+                                &transmit_data            ,
+                                sizeof( transmit_data )   ,
+                                HAL_DEFAULT_TIMEOUT 
+                                );
+
+    if ( hal_status == HAL_TIMEOUT )
+    {
+        return FLASH_TIMEOUT;
+    }
+
+    /* Send address bytes */
+    hal_status = HAL_SPI_Transmit(
+                                &hspi2                            ,
+                                &( pflash_handle -> address[0] )  ,
+                                sizeof( pflash_handle -> address ),
+                                HAL_DEFAULT_TIMEOUT 
+                                );
+
+    if ( hal_status == HAL_TIMEOUT )
+    {
+        return FLASH_TIMEOUT;
+    }
+
+    /* Write bytes */
+    hal_status = HAL_SPI_Transmit(
+                                &hspi2                         ,
+                                pflash_handle -> pbuffer       ,
+                                pflash_handle -> num_bytes     ,
+                                FLASH_WRITE_TIMEOUT 
+                                );
+
+    if ( hal_status == HAL_TIMEOUT )
+    {
+        return FLASH_TIMEOUT;
+    }
 
     /* Drive chip enable line high */
     HAL_GPIO_WritePin(FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_SET);
