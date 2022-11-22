@@ -13,7 +13,7 @@
 /*------------------------------------------------------------------------------
  Standard Includes                                                                     
 ------------------------------------------------------------------------------*/
-
+#include <string.h>
 
 /*------------------------------------------------------------------------------
  Project Includes                                                                     
@@ -21,7 +21,7 @@
 #include "main.h"
 #include "flash.h"
 #include "led.h"
-#include "sdr_pin_defines_A0002.h";
+#include "sdr_pin_defines_A0002.h"
 
 /*------------------------------------------------------------------------------
  Global Variables 
@@ -734,7 +734,9 @@ uint8_t transmit_data = FLASH_OP_HW_FULL_ERASE; /* Data to be transmitted over S
 
 /* Check if write_enabled */
 if(pflash_handle -> write_enabled == false)
+{
     return FLASH_WRITE_PROTECTED;
+}
 
 /* Drive chip enable line low */
 HAL_GPIO_WritePin(FLASH_SS_GPIO_PORT, FLASH_SS_PIN, GPIO_PIN_RESET);

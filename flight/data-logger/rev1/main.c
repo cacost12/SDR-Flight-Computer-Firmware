@@ -14,6 +14,7 @@
 ------------------------------------------------------------------------------*/
 #include <stdbool.h>
 #include "sdr_pin_defines_A0002.h"
+#include <string.h>
 
 
 /*------------------------------------------------------------------------------
@@ -157,7 +158,8 @@ while (1)
 	if ( ign_switch_cont() ) /* Enter data logger mode */
 		{
 		/* Erase the entire Flash chip */
-		flash_run_status = flash_erase();
+		flash_write_enable(pflash_handle);
+		flash_run_status = flash_erase(pflash_handle);
 		if(flash_run_status == FLASH_OK){
 			/* start recording time */
 			startTime = HAL_GetTick();
