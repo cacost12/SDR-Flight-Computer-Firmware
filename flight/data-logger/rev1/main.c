@@ -70,8 +70,10 @@ USB_STATUS usb_status;     				/* Status of USB HAL         */
 HFLASH_BUFFER flash_buffer; 			/* Flash to PC Data Buffer   */
 HFLASH_BUFFER* pflash_handle = &flash_buffer;
 FLASH_CMD_STATUS flash_run_status;		/* Status of FLASH functions */
-HSENSOR_BUFFER sensor_buffer;
-HSENSOR_BUFFER* psensor_handle = &sensor_buffer;
+SENSOR_DATA sensor_data;
+SENSOR_DATA* sensor_data_ptr = &sensor_data;
+uint32_t time;
+uint32_t startTime;
 
 
 /*------------------------------------------------------------------------------
@@ -157,21 +159,31 @@ while (1)
 		/* Erase the entire Flash chip */
 		flash_run_status = flash_erase();
 		if(flash_run_status == FLASH_OK){
+			/* start recording time */
+			startTime = HAL_GetTick();
+			// reset address pointer location
+			pflash_handle->num_bytes = 30;
+			pflash_handle->address_32 = 0;
 			while ( 1 )
 				{
 				// Check memory
+			
+				/* update time */
+				time = HAL_GetTick() - startTime;
+
 				// Poll sensors
-				SENSOR_DATA dummyData;
-				uint32_t dummyTime;
-				psensor_handle->sensor_data = dummyData;
-				psensor_handle->time = dummyTime;
-				pflash_handle->pbuffer = psensor_handle;
-				pflash_handle->address_32 = 0;		//
+				// dummy data = 0
+				memset(sensor_data_ptr, 0, sizeof(SENSOR_DATA));
+				
 				// Write to flash
+				flash_store(pflash_handle, sensor_data_ptr, time);
+
 				// Update memory pointer
+				pflash_handle->address_32 += 30;
 
 				//WIP: How to get the size of data? Increment address by sizeof(data)
 				//Put the data in flash buffer first? or have a new Write method() that takes in the data
+				
 				}
 			}
 		}

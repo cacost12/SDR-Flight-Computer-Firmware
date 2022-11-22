@@ -89,11 +89,6 @@ typedef struct _FLASH_BUFFER_TAG {
 
 } HFLASH_BUFFER;
 
-typedef struct _SENSOR_FLASH_BUFFER_TAG {
-    uint32_t time;
-    SENSOR_DATA sensor_data;
-} HSENSOR_BUFFER;
-
 /* Flash subcommand codes */
 typedef enum FLASH_SUBCMD_CODES {
     FLASH_SUBCMD_READ = 0 ,
@@ -131,7 +126,17 @@ static void address_to_bytes
         uint8_t* address_bytes
     );
 
-FLASH_CMD_STATUS flash_extract(HFLASH_BUFFER* pflash_handle);
+FLASH_CMD_STATUS flash_store
+    (
+        HFLASH_BUFFER* pflash_handle,
+        SENSORDATA* sensor_data_ptr ,
+        uint32_t time          
+    )
+
+FLASH_CMD_STATUS flash_extract
+    (
+        HFLASH_BUFFER* pflash_handle
+    );
 
 /* Executes a flash subcommand based on user input from the sdec terminal */
 FLASH_CMD_STATUS flash_cmd_execute

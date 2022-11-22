@@ -925,7 +925,8 @@ FLASH_CMD_STATUS flash_extract(HFLASH_BUFFER* pflash_handle){
 FLASH_CMD_STATUS flash_store
     (
         HFLASH_BUFFER* pflash_handle,
-        uint8_t num_bytes           
+        SENSOR_DATA* sensor_data_ptr,
+        uint32_t time               
     )
 {
         /*------------------------------------------------------------------------------
@@ -934,10 +935,19 @@ FLASH_CMD_STATUS flash_store
     /* Return data from SPI bus */
     uint8_t hal_status;    /* Status code return by hal spi functions             */
     uint8_t transmit_data = FLASH_OP_HW_BYTE_PROGRAM; /* Data to be transmitted over SPI                     */
-
+    uint8_t buffer[30];
     /*------------------------------------------------------------------------------
     API function implementation
     ------------------------------------------------------------------------------*/
+    
+    //convert address_32 to bytes
+    address_to_bytes(pflash_handle->address_32, pflash_handle->address);
+
+    //get Data in sensor_handle to uint8_t array to pbuffer
+    memcpy(&time, &buffer[0], sizeof(uint32_t));
+    memcpy(sensor_data_ptr, &buffer[4], sizeof(SENSOR_DATA));
+
+    pflash_handle->pbuffer = &buffer[0];
 
     /* Check if write_enabled */
     if(pflash_handle -> write_enabled == false)
