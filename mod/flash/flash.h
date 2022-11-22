@@ -119,19 +119,13 @@ typedef enum FLASH_CMD_STATUS {
 /*------------------------------------------------------------------------------
  Function Prototypes 
 ------------------------------------------------------------------------------*/
-/* Converts 24 bit addressing to 3 byte addressing*/
-static void address_to_bytes
-    (
-        uint32_t address,
-        uint8_t* address_bytes
-    );
 
 FLASH_CMD_STATUS flash_store
     (
         HFLASH_BUFFER* pflash_handle,
         SENSOR_DATA* sensor_data_ptr ,
         uint32_t time          
-    )
+    );
 
 FLASH_CMD_STATUS flash_extract
     (
