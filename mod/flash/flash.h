@@ -129,7 +129,7 @@ static void address_to_bytes
 FLASH_CMD_STATUS flash_store
     (
         HFLASH_BUFFER* pflash_handle,
-        SENSORDATA* sensor_data_ptr ,
+        SENSOR_DATA* sensor_data_ptr ,
         uint32_t time          
     )
 

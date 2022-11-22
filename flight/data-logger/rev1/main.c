@@ -27,7 +27,7 @@
 #include "flash.h"
 #include "baro.h"
 #include "usb.h"
-
+#include "sensor.h"
 
 /*------------------------------------------------------------------------------
  Global Variables                                                                  
