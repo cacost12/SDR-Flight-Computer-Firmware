@@ -36,6 +36,7 @@
 #include "led.h"
 #include "sensor.h"
 #include "usb.h"
+#include "gps.h"
 
 
 /*------------------------------------------------------------------------------
@@ -47,6 +48,7 @@ SD_HandleTypeDef   hsd1;    /* SD Card        */
 SPI_HandleTypeDef  hspi2;   /* External flash */
 TIM_HandleTypeDef  htim4;   /* Buzzer Timer   */
 UART_HandleTypeDef huart6;  /* USB            */
+UART_HandleTypeDef huart4;  /* GPS            */  
 
 
 /*------------------------------------------------------------------------------
@@ -98,6 +100,7 @@ FLASH_SPI_Init();           /* External flash chip                            */
 BUZZER_TIM_Init();          /* Buzzer                                         */
 SD_SDMMC_Init();            /* SD card SDMMC interface                        */
 MX_FATFS_Init();            /* FatFs file system middleware                   */
+MX_UART4_Init();			/* GPS UART				  						  */
 
 
 /*------------------------------------------------------------------------------
@@ -142,7 +145,7 @@ command_status                 = USB_OK;
 flash_status                   = FLASH_OK;
 ign_status                     = IGN_OK;
 imu_status                     = IMU_OK;
-
+gps_status					   = GPS_OK;
 
 /*------------------------------------------------------------------------------
  External Hardware Initializations 
