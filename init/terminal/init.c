@@ -32,6 +32,7 @@ extern SD_HandleTypeDef   hsd1;    /* SD Card        */
 extern SPI_HandleTypeDef  hspi2;   /* External flash */
 extern TIM_HandleTypeDef  htim4;   /* Buzzer Timer   */
 extern UART_HandleTypeDef huart6;  /* USB            */
+extern UART_HandleTypeDef huart4;  /* GPS            */
 
 
 /*------------------------------------------------------------------------------
@@ -364,7 +365,7 @@ if (HAL_UARTEx_DisableFifoMode(&huart6) != HAL_OK)
 } /* USB_UART_Init */
 
 
-static void MX_UART4_Init(void)
+void MX_UART4_Init(void)
 {
 
   /* USER CODE BEGIN UART4_Init 0 */
@@ -622,6 +623,16 @@ HAL_GPIO_Init( SDR_SD_DETECT_GPIO_PORT, &GPIO_InitStruct );
 
 #if defined( A0002_REV2 )
 	/* USB Detect Pin */
+	GPIO_InitStruct.Pin  = USB_DETECT_PIN;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init( USB_DETECT_GPIO_PORT, &GPIO_InitStruct );
+#endif /* #if defined( A0002_REV2 ) */
+
+/*---------------------------- GPS Pins ------------------------------------*/
+
+#if defined( A0002_REV2 )
+	/* GPS Detect Pin */
 	GPIO_InitStruct.Pin  = USB_DETECT_PIN;
 	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;

@@ -84,6 +84,9 @@ IMU_CONFIG    imu_configs;                     /* IMU config settings         */
 /* Ignition/Parachute Ejection */
 IGN_STATUS    ign_status;                      /* Ignition status code        */
 
+/* GPS */
+GPS_STATUS	  gps_status;					   /* GPS return codes */
+
 
 /*------------------------------------------------------------------------------
  MCU/HAL Initialization                                                                  
@@ -99,8 +102,8 @@ IMU_GPS_I2C_Init();         /* IMU and GPS                                    */
 FLASH_SPI_Init();           /* External flash chip                            */
 BUZZER_TIM_Init();          /* Buzzer                                         */
 SD_SDMMC_Init();            /* SD card SDMMC interface                        */
-MX_FATFS_Init();            /* FatFs file system middleware                   */
 MX_UART4_Init();			/* GPS UART				  						  */
+// MX_FATFS_Init();            /* FatFs file system middleware                   */
 
 
 /*------------------------------------------------------------------------------
@@ -178,6 +181,9 @@ if ( imu_status != IMU_OK )
 /* Indicate Successful MCU and Peripheral Hardware Setup */
 led_set_color( LED_GREEN );
 
+uint8_t gps_buffer[10];
+
+gps_status = GPS_Get_ID(&gps_buffer);
 
 /*------------------------------------------------------------------------------
  Event Loop                                                                  
