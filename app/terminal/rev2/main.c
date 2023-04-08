@@ -181,9 +181,12 @@ if ( imu_status != IMU_OK )
 /* Indicate Successful MCU and Peripheral Hardware Setup */
 led_set_color( LED_GREEN );
 
-uint8_t gps_buffer[10];
-
-gps_status = GPS_Get_ID(&gps_buffer);
+uint8_t gps_buffer[100];
+gps_status = GPS_Load_Config();
+if ( gps_status != GPS_TIMEOUT )
+{
+	gps_status = GPS_Get_ID(&gps_buffer[0]);
+}
 
 /*------------------------------------------------------------------------------
  Event Loop                                                                  
